@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.qtp.nio;
 
@@ -20,6 +23,7 @@ import com.devexperts.qd.qtp.help.MessageConnectorSummary;
 import com.devexperts.qd.stats.QDStats;
 import com.devexperts.qd.util.QDConfig;
 import com.devexperts.transport.stats.EndpointStats;
+import com.devexperts.util.LogUtil;
 import com.devexperts.util.SystemProperties;
 
 /**
@@ -77,7 +81,7 @@ public class NioServerConnector extends AbstractMessageConnector implements NioS
 			return;
 		}
 		if (core.compareAndSet(null, newCore)) {
-			log.info("Starting NioServerConnector to " + getAddress());
+			log.info("Starting NioServerConnector to " + LogUtil.hideCredentials(getAddress()));
 			newCore.start();
 		} else
 			newCore.close();
@@ -154,7 +158,7 @@ public class NioServerConnector extends AbstractMessageConnector implements NioS
 		if (newBindAddress == null || newBindAddress.isEmpty())
 			newBindAddress = ANY_BIND_ADDRESS;
 		if (!newBindAddress.equals(this.bindAddressString)) {
-			log.info("Setting bindAddr=" + newBindAddress);
+			log.info("Setting bindAddr=" + LogUtil.hideCredentials(newBindAddress));
 			this.bindAddress = newBindAddress.equals(ANY_BIND_ADDRESS) ? null : InetAddress.getByName(newBindAddress);
 			this.bindAddressString = newBindAddress;
 			reconfigure();

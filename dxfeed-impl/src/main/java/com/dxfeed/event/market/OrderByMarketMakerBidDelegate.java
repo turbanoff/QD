@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.dxfeed.event.market;
 
@@ -46,7 +49,7 @@ public final class OrderByMarketMakerBidDelegate extends OrderBaseDelegateImpl<O
 		event.setTime(m.getBidTimeMillis(cursor));
 		event.setSequence(0);
 		event.setPrice(m.getBidPrice(cursor));
-		event.setSize(m.getBidSize(cursor));
+		event.setSizeAsDouble(m.getBidSizeDouble(cursor));
 		event.setCount(m.getBidCount(cursor));
 		event.setOrderSide(Side.BUY);
 		event.setScope(Scope.AGGREGATE);

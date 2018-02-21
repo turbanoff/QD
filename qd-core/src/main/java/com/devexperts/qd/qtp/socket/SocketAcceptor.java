@@ -1,21 +1,24 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.qtp.socket;
 
 import java.io.IOException;
 import java.net.*;
 import javax.net.ServerSocketFactory;
-import javax.net.ssl.SSLServerSocketFactory;
 
 import com.devexperts.logging.Logging;
 import com.devexperts.qd.qtp.QTPWorkerThread;
 import com.devexperts.qd.qtp.ReconnectHelper;
+import com.devexperts.util.LogUtil;
 
 class SocketAcceptor extends QTPWorkerThread {
 	private static final Logging log = Logging.getLogging(ServerSocketConnector.class);
@@ -23,7 +26,6 @@ class SocketAcceptor extends QTPWorkerThread {
 	private final ServerSocketConnector connector;
 	private final int port;
 	private final InetAddress bindAddress;
-	private final boolean isTls;
 	private final String address;
 
 	private final ReconnectHelper reconnectHelper;
@@ -37,7 +39,6 @@ class SocketAcceptor extends QTPWorkerThread {
 			"-Acceptor");
 		this.connector = connector;
 		port = connector.getLocalPort();
-		isTls = connector.getTls();
 		bindAddress = connector.bindAddr;
 		address = connector.getAddress();
 		reconnectHelper = new ReconnectHelper(connector.getReconnectDelay());
@@ -55,16 +56,14 @@ class SocketAcceptor extends QTPWorkerThread {
 				if (isClosed())
 					return; // ServerSocketConnector interrupts thread before closing socket. Socket is closed here...
 				reconnectHelper.sleepBeforeConnection();
-				log.info("Trying to listen at " + address + (isTls ? " (using TLS)" : ""));
+				log.info("Trying to listen at " + LogUtil.hideCredentials(address));
 				try {
-					serverSocket = this.serverSocket =
-						(isTls ? SSLServerSocketFactory.getDefault() : ServerSocketFactory.getDefault())
-							.createServerSocket(port, 0, bindAddress);
+					serverSocket = this.serverSocket = ServerSocketFactory.getDefault().createServerSocket(port, 0, bindAddress);
 				} catch (Throwable t) {
-					log.error("Failed to listen at " + address, t);
+					log.error("Failed to listen at " + LogUtil.hideCredentials(address), t);
 					continue; // retry listening again
 				}
-				log.info("Listening at " + address + (isTls ? " (using TLS)" : ""));
+				log.info("Listening at " + LogUtil.hideCredentials(address));
 				connector.notifyMessageConnectorListeners();
 				// the following code handle concurrent close of the acceptor thread while socket was being created
 				// Note, that volatile this.serverSocket was assigned first,
@@ -74,7 +73,7 @@ class SocketAcceptor extends QTPWorkerThread {
 					return;
 			}
 			Socket socket = serverSocket.accept();
-			log.info("Accepted client socket connection: " + SocketUtil.getAcceptedSocketAddress(socket));
+			log.info("Accepted client socket connection: " + LogUtil.hideCredentials(SocketUtil.getAcceptedSocketAddress(socket)));
 			SocketHandler handler = new SocketHandler(connector, new ServerSocketSource(socket));
 			connector.addHandler(handler);
 			handler.setCloseListener(connector.closeListener);
@@ -111,11 +110,11 @@ class SocketAcceptor extends QTPWorkerThread {
 			try {
 				serverSocket.close();
 				if (reason == null)
-					log.info("Stopped listening at " + address);
+					log.info("Stopped listening at " + LogUtil.hideCredentials(address));
 				else
-					log.error("Stopped listening at " + address, reason);
+					log.error("Stopped listening at " + LogUtil.hideCredentials(address), reason);
 			} catch (Throwable t) {
-				log.error("Failed to close server socket " + address, t);
+				log.error("Failed to close server socket " + LogUtil.hideCredentials(address), t);
 			}
 		}
 	}

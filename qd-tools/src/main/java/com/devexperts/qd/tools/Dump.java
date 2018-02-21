@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.tools;
 
@@ -21,6 +24,7 @@ import com.devexperts.qd.qtp.file.FileWriterImpl;
 import com.devexperts.qd.qtp.text.TextQTPComposer;
 import com.devexperts.qd.stats.QDStats;
 import com.devexperts.services.ServiceProvider;
+import com.devexperts.util.LogUtil;
 
 /**
  * Connects to specified address(es) and dumps all received data and subscription information.
@@ -100,7 +104,7 @@ public class Dump extends AbstractTool {
 		File file = new File(filename);
 		if (!file.exists() || !file.isFile())
 			return subscription;
-		QDLog.log.info("Reading subscription from " + filename);
+		QDLog.log.info("Reading subscription from " + LogUtil.hideCredentials(filename));
 		byte[] buffer = new byte[(int)file.length()];
 		int length = 0;
 		try (FileInputStream in = new FileInputStream(file)) {
@@ -116,7 +120,7 @@ public class Dump extends AbstractTool {
 				subscription.processSubscription(iterator);
 			}
 		});
-		QDLog.log.info("Done reading subscription from " + filename + ": read " + subscription.size() + " elements");
+		QDLog.log.info("Done reading subscription from " + LogUtil.hideCredentials(filename) + ": read " + subscription.size() + " elements");
 		return subscription;
 	}
 

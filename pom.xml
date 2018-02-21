@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ QDS - Quick Data Signalling Library
-  ~ Copyright (C) 2002-2016 Devexperts LLC
-  ~
-  ~ This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
-  ~ If a copy of the MPL was not distributed with this file, You can obtain one at
-  ~ http://mozilla.org/MPL/2.0/.
+  !++
+  QDS - Quick Data Signalling Library
+  !-
+  Copyright (C) 2002 - 2018 Devexperts LLC
+  !-
+  This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+  If a copy of the MPL was not distributed with this file, You can obtain one at
+  http://mozilla.org/MPL/2.0/.
+  !__
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -13,10 +16,11 @@
 	<groupId>com.devexperts.qd</groupId>
 	<artifactId>QD</artifactId>
 	<packaging>pom</packaging>
-	<version>3.250</version>
+	<version>3.258</version>
 
+	<inceptionYear>2002</inceptionYear>
 	<organization>
-		<name>Devexperts</name>
+		<name>Devexperts LLC</name>
 		<url>http://www.devexperts.com</url>
 	</organization>
 
@@ -36,6 +40,7 @@
 		<module>dxfeed-bin</module>
 		<module>dxfeed-webservice</module>
 		<module>dxfeed-news</module>
+		<module>dxfeed-plotter</module>
 
 		<!-- additional modules with deliverable JavaDocs (shaded into qds.jar) -->
 		<module>qd-core</module>
@@ -69,10 +74,7 @@
 		<module>dxfeed-codegen-verify</module>
 		<module>dxfeed-viewer</module>
 		<module>dxfeed-ondemand</module>
-
-		<!-- plugins are special - they have their own version -->
-		<module>jspc-maven-plugin</module>
-		<module>dxfeed-plotter</module>
+		<module>dxfeed-webservice-impl</module>
 	</modules>
 
 	<dependencies>
@@ -103,14 +105,8 @@
 		<dependency>
 			<groupId>com.devexperts.timetest</groupId>
 			<artifactId>agent</artifactId>
-			<version>1.1.1</version>
+			<version>${timetest.version}</version>
 			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>com.devexperts.qd</groupId>
-					<artifactId>dxlib</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 	</dependencies>
 
@@ -136,21 +132,25 @@
 		<deploy.skip>false</deploy.skip>
 		<!-- Most modules don't produce javadoc -->
 		<javadoc.skip>true</javadoc.skip>
+		<javadoc.error.pattern>\*?\s*@author.*</javadoc.error.pattern>
 
 		<!-- version of Jetty for all web and servlet modules -->
-		<jetty.version>9.2.9.v20150224</jetty.version>
+		<jetty.version>9.2.21.v20170120</jetty.version>
 		<!-- need to be in sync with servlet-api -->
 		<servlet-api.version>3.1.0</servlet-api.version>
 		<!-- need to be in sync with jetty -->
-		<jasper-glassfish.version>2.1.0.v201110031002</jasper-glassfish.version>
+		<jasper.version>8.0.33</jasper.version>
+
 		<!-- versions of frameworks and libraries to use -->
 		<log4j.version>1.1.3</log4j.version>
+		<log4j2.version>2.8.1</log4j2.version>
 		<jackson.version>2.4.3</jackson.version>
 		<jaxb.version>2.2.7</jaxb.version>
-		<cometd.version>3.0.4</cometd.version>
-		<slf4j.version>1.7.10</slf4j.version>
+		<cometd.version>3.1.1</cometd.version>
+		<slf4j.version>1.7.22</slf4j.version>
 		<aspectj.version>1.8.2</aspectj.version>
 		<junit.version>4.12</junit.version>
+		<timetest.version>1.3</timetest.version>
 		<!-- same version as used by cometd above -->
 	</properties>
 
@@ -264,6 +264,11 @@
 				<configuration>
 					<tags>
 						<tag>
+							<name>implSpec</name>
+							<placement>a</placement>
+							<head>Implementation Requirements:</head>
+						</tag>
+						<tag>
 							<name>dgen.annotate</name>
 							<!-- for all places -->
 							<placement>a</placement>
@@ -291,7 +296,7 @@
 						<versionTagPrefix>qd-qds-</versionTagPrefix>
 					</flowInitContext>
 					<squash>true</squash>
-					<scmCommentPrefix>[release] </scmCommentPrefix>
+					<scmCommentPrefix>[release] </scmCommentPrefix>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -339,6 +344,28 @@
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<executions>
+					<execution>
+						<!-- During install phase copy artifact to local install.dir -->
+						<id>check-author-string</id>
+						<phase>validate</phase>
+						<configuration>
+							<target>
+								<pathconvert pathsep="${line.separator}" property="invalidJavadoc" setonempty="false">
+									<fileset dir="${project.build.sourceDirectory}" includes="**/*.java" erroronmissingdir="false">
+										<containsregexp expression="${javadoc.error.pattern}" />
+									</fileset>
+									<fileset dir="${project.build.testSourceDirectory}" includes="**/*.java" erroronmissingdir="false">
+										<containsregexp expression="${javadoc.error.pattern}" />
+									</fileset>
+								</pathconvert>
+								<echo message="Found tag '@author' in javadoc: ${line.separator}${invalidJavadoc}" />
+								<fail message="Found tag '@author' in javadoc" if="invalidJavadoc" />
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
 					<execution>
 						<!-- During install phase copy artifact to local install.dir -->
 						<id>install-artifact-file</id>
@@ -407,12 +434,44 @@
 								<artifactItem>
 									<groupId>com.devexperts.timetest</groupId>
 									<artifactId>agent</artifactId>
-									<version>1.1.1</version>
+									<version>${timetest.version}</version>
 									<outputDirectory>${project.build.directory}</outputDirectory>
 									<destFileName>timetest.jar</destFileName>
 								</artifactItem>
 							</artifactItems>
 						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<configuration>
+					<licenseName>mpl-2</licenseName>
+					<failOnMissingHeader>true</failOnMissingHeader>
+					<failOnNotUptodateHeader>true</failOnNotUptodateHeader>
+					<addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+					<canUpdateLicense>true</canUpdateLicense>
+					<canUpdateCopyright>true</canUpdateCopyright>
+					<canUpdateDescription>true</canUpdateDescription>
+					<useJavaNoReformatCommentStartTag>false</useJavaNoReformatCommentStartTag>
+					<sectionDelimiter>!-</sectionDelimiter>
+					<processStartTag>!++</processStartTag>
+					<processEndTag>!__</processEndTag>
+					<excludes>
+						<exclude>**/*.ftl</exclude>
+						<exclude>**/*.css</exclude>
+						<exclude>**/META-INF/services/**</exclude>
+					</excludes>
+					<descriptionTemplate>${session.executionRootDirectory}/license/src/main/resources/description.ftl</descriptionTemplate>
+					<licenseResolver>file:${session.executionRootDirectory}/license/src/main/resources</licenseResolver>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>check-file-header</goal>
+						</goals>
 					</execution>
 				</executions>
 			</plugin>
@@ -483,7 +542,7 @@
 				</plugin>
 				<plugin>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>2.8.1</version>
+					<version>2.9</version>
 				</plugin>
 				<plugin>
 					<artifactId>maven-war-plugin</artifactId>
@@ -503,6 +562,16 @@
 					<version>${jetty.version}</version>
 				</plugin>
 				<plugin>
+					<groupId>org.eclipse.jetty</groupId>
+					<artifactId>jetty-jspc-maven-plugin</artifactId>
+					<version>${jetty.version}</version>
+					<configuration>
+						<jspc>
+							<package>jsp</package>
+						</jspc>
+					</configuration>
+				</plugin>
+				<plugin>
 					<groupId>com.samaxes.maven</groupId>
 					<artifactId>minify-maven-plugin</artifactId>
 					<version>1.6</version>
@@ -513,9 +582,9 @@
 					<version>1.6</version>
 				</plugin>
 				<plugin>
-					<groupId>com.devexperts.qd</groupId>
-					<artifactId>jspc-maven-plugin</artifactId>
-					<version>3.250</version>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>license-maven-plugin</artifactId>
+					<version>1.13</version>
 				</plugin>
 				<plugin>
 					<groupId>com.devexperts.qd</groupId>
@@ -564,8 +633,8 @@
 	<scm>
 		<url>https://stash.in.devexperts.com/scm/mdd/qd.git</url>
 		<connection>scm:git:ssh://git@stash.in.devexperts.com:7999/mdd/qd.git</connection>
-	  <tag>HEAD</tag>
-  </scm>
+		<tag>HEAD</tag>
+	</scm>
 
 	<distributionManagement>
 		<repository>

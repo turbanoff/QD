@@ -1,15 +1,19 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.dxfeed.ipf.filter;
 
 import com.devexperts.qd.*;
 import com.devexperts.qd.kit.FilterSyntaxException;
+import com.devexperts.qd.kit.SymbolSetFilter;
 import com.devexperts.qd.spi.QDFilterContext;
 import com.devexperts.qd.spi.QDFilterFactory;
 import com.devexperts.services.ServiceProvider;
@@ -44,6 +48,9 @@ public class IPFFilterFactory extends QDFilterFactory {
 			} catch (FilterSyntaxException e) {
 				QDLog.log.error("Failed to read potential IPF \"" + spec + "\", treating as individual symbol or pattern", e);
 			}
+		if (context == QDFilterContext.SYMBOL_SET && filter != null)
+			// Convert symbol sets with attributes into plain symbol set in this context
+			return new SymbolSetFilter(getScheme(), filter.getSymbolSet());
 		return filter;
 	}
 }

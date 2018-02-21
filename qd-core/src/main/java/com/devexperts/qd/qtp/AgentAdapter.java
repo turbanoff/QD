@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.qtp;
 
@@ -25,8 +28,7 @@ import com.devexperts.qd.spi.QDFilterFactory;
 import com.devexperts.qd.stats.QDStats;
 import com.devexperts.qd.util.LegacyAdapter;
 import com.devexperts.services.Services;
-import com.devexperts.util.LoggedThreadPoolExecutor;
-import com.devexperts.util.TimePeriod;
+import com.devexperts.util.*;
 
 /**
  * The <code>AgentAdapter</code> adapts agent side of QD to message API.
@@ -458,7 +460,8 @@ public class AgentAdapter extends MessageAdapter {
 				try {
 					filters.put(filter, filterFactory.createFilter(filter, QDFilterContext.REMOTE_FILTER));
 				} catch (IllegalArgumentException e) {
-					QDLog.log.warn("Cannot parse filter '" + filter + "' from " + getRemoteHostAddress(), e);
+					QDLog.log.warn("Cannot parse filter '" + LogUtil.hideCredentials(filter) + "'" +
+						" from " + LogUtil.hideCredentials(getRemoteHostAddress()), e);
 					filters.put(filter, QDFilter.ANYTHING);
 				}
 			peerFilter[contract.ordinal()] = filters.get(filter);

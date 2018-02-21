@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.dxfeed.event.market;
 
@@ -43,7 +46,7 @@ public final class OrderByQuoteAskDelegate extends OrderBaseDelegateImpl<Order> 
 		event.setTime(m.getAskTimeMillis(cursor));
 		event.setSequence(0);
 		event.setPrice(m.getAskPrice(cursor));
-		event.setSize(m.getAskSize(cursor));
+		event.setSizeAsDouble(m.getAskSizeDouble(cursor));
 		event.setExchangeCode(m.getRecordExchange() == 0 ? m.getAskExchangeCode(cursor) : m.getRecordExchange());
 		event.setOrderSide(Side.SELL);
 		event.setScope(m.getRecordExchange() == 0 ? Scope.COMPOSITE : Scope.REGIONAL);

@@ -1,15 +1,20 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.connector.codec;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+import javax.net.ssl.TrustManager;
 
 import com.devexperts.connector.proto.*;
 import com.devexperts.io.ChunkPool;
@@ -79,7 +84,15 @@ public abstract class CodecConnectionFactory extends ApplicationConnectionFactor
 		delegate.setChunkPool(chunkPool);
 	}
 
-	protected ApplicationConnectionFactory getDelegate() {
+	public ApplicationConnectionFactory getDelegate() {
 		return delegate;
+	}
+
+	/**
+	 * Using for SSLConnectionFactory
+	 */
+	public void setTrustManager(TrustManager trustManager) {
+		if (delegate instanceof CodecConnectionFactory)
+			((CodecConnectionFactory)delegate).setTrustManager(trustManager);
 	}
 }

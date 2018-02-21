@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.dxfeed.event.market;
 
@@ -45,7 +48,7 @@ public final class OrderDelegate extends OrderBaseDelegateImpl<Order> {
 		event.setIndex(((long)getSource().id() << 32) | (m.getIndex(cursor) & 0xFFFFFFFFL));
 		event.setTimeSequence((((long)m.getTimeSeconds(cursor)) << 32) | (m.getSequence(cursor) & 0xFFFFFFFFL));
 		event.setPrice(m.getPrice(cursor));
-		event.setSize(m.getSize(cursor));
+		event.setSizeAsDouble(m.getSizeDouble(cursor));
 		event.setCount(m.getCount(cursor));
 		event.setFlags(m.getFlags(cursor));
 		event.setMarketMaker(m.getMarketMakerString(cursor));
@@ -62,7 +65,7 @@ public final class OrderDelegate extends OrderBaseDelegateImpl<Order> {
 		m.setTimeSeconds(cursor, (int)(event.getTimeSequence() >>> 32));
 		m.setSequence(cursor, (int)event.getTimeSequence());
 		m.setPrice(cursor, event.getPrice());
-		m.setSize(cursor, (int)event.getSize());
+		m.setSizeDouble(cursor, event.getSizeAsDouble());
 		m.setCount(cursor, (int)event.getCount());
 		m.setFlags(cursor, event.getFlags());
 		m.setMarketMakerString(cursor, event.getMarketMaker());

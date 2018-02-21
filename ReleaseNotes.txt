@@ -1,4 +1,86 @@
+QDS 3.258:
 
+* [QD-1060] Prepare QD 3.258 release
+* [QD-1058] Remove IDE-specific files from the repository
+* [QD-1055] [Schedule] Add holidays for 2018
+* [QD-1056] BUG FIX: RMI: Memory leak on server side during normal RMI operation
+* [QD-1057] Files are updated for year 2018 in copyright
+* [QD-1053] dxlib: Exception stack trace not logged with log4j2
+* [QD-1059] dxFeed API: Add support of fractions to size and volume fields in all events
+
+QDS 3.257:
+
+* [QD-1051] dxlib: NPE on log event formatting
+* [QD-1052] Add Order source for CFE (Order#CFE)
+* [QD-1050] BUG FIX: only 2 levels of SSL-level authentication are supported
+
+QDS 3.256:
+
+* [QD-1049] Fix RMIChannelTest.cancelChannelTasks
+* [QD-1048] QD Core: improve performance of record buffer copying
+* [QD-1047] dxlib: Add more convenient methods to URLInputStream
+* [QD-1046] Hide credentials in logs, management, monitoring, and display
+* [QD-1045] Add Order source for ICE (Order#ICE)
+* [QD-1042] dxlib: Default console logging with Log4j2 doesn't work
+* [QD-1041] BUG FIX: Closure of channel's client-side(due to some reasons) doesn't lead to closure of inner-tasks
+* [QD-1040] BUG FIX: Request closure inside of the channel leads to closure of this channel
+* [QD-1034] [dxFeedViewer] Should work correctly with JRE8
+
+QDS 3.255:
+
+* [QD-1032] Add Order records for new sources
+* [QD-931] RMIEndpoint shall support monitoring properties
+* [QD-1027] BUGFIX: TLS protocols and cipher suites system property are not used in the SSLConnectionFactory
+* [QD-1029] Improve performance of data formatting
+* [QD-1030] Improve performance of instruments tool exclude operation
+* [QD-1022] IPF: Authorisation issue in in and notin expressions
+* [QD-1031] Migrate from manual license upgrade to maven license plugin
+  - To add or update a copyright, use the command: mvn license:update-file-header
+* Files are updated for new template in copyright
+
+QDS 3.254:
+
+* [QD-1020] dxFeed webservice: Migrate to cometd 3.1.1
+  - Breaking changes: changed location of JavaScript files:
+    + "\js\cometd\org\cometd.js" is moved to "\js\cometd\cometd.js"
+    + "\js\cometd\jquery\jquery.cometd.js" is moved to "\js\jquery\jquery.cometd.js" (same with other cometd extensions)
+    + "\js\dxfeed\dxfeed.context.js" is deprecated - use it only if you have problems with locating service URL
+  - dxFeed JavaSciprt API: added ability to set authToken
+  - Additional migration notes from CometD: https://docs.cometd.org/current/reference/#_migration_30_to_31
+* [QD-1023] BUG FIX: Schedule: Bad schedule.properties format leads to unrecoverable errors
+* [QD-1019] BUGFIX: NullPointerException in NotIPF filter
+* [QD-1024] Tools do not accept several ipfs as source of symbols
+* [QD-1025] dxFeed API: Add Buyer and Seller optional fields to TimeAndSale events
+* [QD-1026] dxFeedAPI: Add regional TimeAndSale events
+
+QDS 3.253:
+
+* [QD-1021] dxlib: Allow Log4j2 as logging implementation
+* [QD-1018] BUGFIX: SubscriptionProcessor stops working after exception
+
+QDS 3.252:
+
+* [QD-1005] Investigate enforcing specific version of TLS (TLS 2.1) programmatically in QD RMI
+  - tls, ssl codecs and option "isTls' are always working through SSLConnectionFactory
+  - New property "protocols" for tls codec is introduce in address string.
+  - New property "cipherSuites" for tls codec is introduce in address string.
+  - Now address line may look like:
+    tls[protocols=TLSv1.2,cipher=SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA;TLS_EMPTY_RENEGOTIATION_INFO_SCSV]+:7777
+* [QD-1015] [dxFeedViewer] Change default ipf-address protocol from http to https
+* [QD-1013] dxlib: Add toString() to TypedMap and TypedKey
+* [QD-1014] BUG FIX: JDK1.8.0_121 does't support script javascript in documentation comment
+* [QD-1016] BUG FIX: Incorrect translation of close price from OnDemand to Summary record
+* [QD-1017] BUG FIX: Spurious ULP formatting in IPF
+
+QDS 3.251:
+
+* [QD-1011] History does not use subscription filter which is specified as service
+* [QD-1008] Schedule: Update Turkey holidays for 2017-2019 to schedule.properties
+* [QD-1007] Improve CPU usage of idle SocketReader
+
+QDS 3.250:
+
+* [QD-995] Prepare QD for delivering to GitHub
 * [QD-998] Add FreeFloat field to Profile record
 * [QD-999] dxlib: Add specific factory methods to IndexedSet
 * [QD-1001] QD unable to recover after I/O error

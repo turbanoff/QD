@@ -1,13 +1,17 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.dxfeed.schedule.test;
 
+import java.io.IOException;
 import java.util.List;
 
 import com.dxfeed.schedule.*;
@@ -84,5 +88,19 @@ public class ScheduleTest extends TestCase {
 			assertTrue(s.getStartTime() % DAY == time);
 			assertTrue(s.getType() == SessionType.valueOf(typeArray[i]));
 		}
+	}
+
+	public void testDefaults() throws IOException {
+		int goodHoliday = 20170111;
+		int badHoliday = 20170118;
+		String def = "date=30000101-000000+0000\n\n";
+		def += "hd.GOOD=\\\n" + goodHoliday + ",\\\n\n";
+		Schedule.setDefaults(def.getBytes());
+		for (int i = goodHoliday - 1; i <= goodHoliday + 1; i++)
+			assertEquals(i == goodHoliday, Schedule.getInstance("(tz=GMT;0=;hd=GOOD)").getDayByYearMonthDay(i).isHoliday());
+		def += "hd.BAD=\\\n" + badHoliday + ",\\";
+		Schedule.setDefaults(def.getBytes());
+		for (int i = badHoliday - 1; i <= badHoliday + 1; i++)
+			assertEquals(i == badHoliday, Schedule.getInstance("(tz=GMT;0=;hd=BAD)").getDayByYearMonthDay(i).isHoliday());
 	}
 }

@@ -1,13 +1,17 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.logging.test;
 
+import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.regex.Pattern;
@@ -28,6 +32,27 @@ public abstract class LogFormatterTestBase extends TestCase {
 
 	public LogFormatterTestBase(String name) {
 		super(name);
+	}
+
+	protected static String loadFile(final File file) throws IOException {
+		InputStream is = null;
+		try {
+			is = new BufferedInputStream(new FileInputStream(file), 1024);
+
+			final Reader reader = new InputStreamReader(is);
+			final StringBuilder result = new StringBuilder();
+			char[] buf = new char[1024];
+			int count;
+			while ((count = reader.read(buf)) != -1) {
+				result.append(buf, 0, count);
+			}
+
+			return result.toString();
+		} finally {
+			if (is != null) {
+				is.close();
+			}
+		}
 	}
 
 	/**

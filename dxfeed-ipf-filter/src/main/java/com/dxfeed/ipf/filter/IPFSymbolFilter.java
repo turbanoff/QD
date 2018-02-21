@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.dxfeed.ipf.filter;
 
@@ -18,8 +21,7 @@ import com.devexperts.qd.*;
 import com.devexperts.qd.kit.FilterSyntaxException;
 import com.devexperts.qd.util.QDConfig;
 import com.devexperts.qd.util.SymbolSet;
-import com.devexperts.util.TimeFormat;
-import com.devexperts.util.TimePeriod;
+import com.devexperts.util.*;
 import com.dxfeed.ipf.InstrumentProfile;
 import com.dxfeed.ipf.InstrumentProfileReader;
 import com.dxfeed.schedule.Schedule;
@@ -35,7 +37,7 @@ public class IPFSymbolFilter extends QDFilter {
 	private final Logging log = new Logging(IPFSymbolFilter.class.getName()) {
 		@Override
 		protected String decorateLogMessage(String msg) {
-			return "[" + address + "] " + super.decorateLogMessage(msg);
+			return "[" + LogUtil.hideCredentials(address) + "] " + super.decorateLogMessage(msg);
 		}
 	};
 
@@ -71,6 +73,7 @@ public class IPFSymbolFilter extends QDFilter {
 
 	// --- instance variables ---
 
+	private final int wildcard;
 	private final String address;
 	private final Config config;
 
@@ -91,6 +94,7 @@ public class IPFSymbolFilter extends QDFilter {
 
 	IPFSymbolFilter(DataScheme scheme, String address, Config config, QDFilter source) {
 		super(scheme, source);
+		this.wildcard = scheme.getCodec().getWildcardCipher();
 		this.address = address;
 		this.config = config;
 	}
@@ -302,7 +306,7 @@ public class IPFSymbolFilter extends QDFilter {
 	public final boolean accept(QDContract contract, DataRecord record, int cipher, String symbol) {
 		// NOte: IPFSymbolFilter is "symbol-only filter" (see QDFilter.Kind.isSymbolOnly), so
 		// it must work even when contract and record are null (it cannot be used here)
-		if (cipher == getScheme().getCodec().getWildcardCipher())
+		if (cipher == wildcard)
 			return true;
 		if (set.contains(cipher, symbol))
 			return true;

@@ -1,18 +1,21 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.rmi.impl;
 
 import java.util.*;
 
+import com.devexperts.connector.codec.ssl.SSLConnectionFactory;
 import com.devexperts.connector.proto.*;
 import com.devexperts.qd.qtp.*;
-import com.devexperts.qd.qtp.socket.ClientSocketConnector;
 import com.devexperts.qd.stats.QDStats;
 import com.devexperts.util.SystemProperties;
 
@@ -33,8 +36,9 @@ public class RMIConnectorInitializer implements QDEndpoint.ConnectorInitializer 
 		if (rmiEndpoint.trustManager != null) {
 			try {
 				for (MessageConnector connector : connectors) {
-					if (connector instanceof ClientSocketConnector)
-						((ClientSocketConnector)connector).setTrustManager(rmiEndpoint.trustManager);
+					SSLConnectionFactory factory = MessageConnectors.getCodecFactory(connector.getFactory(), SSLConnectionFactory.class);
+					if (factory != null)
+						factory.setTrustManager(rmiEndpoint.trustManager);
 				}
 			} catch (ClassCastException e) {
 				throw new IllegalArgumentException("Trust store may be specified for client socket connector only", e);

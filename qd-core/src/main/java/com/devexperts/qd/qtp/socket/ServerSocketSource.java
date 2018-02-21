@@ -1,16 +1,20 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.qtp.socket;
 
 import java.net.Socket;
 
 import com.devexperts.logging.Logging;
+import com.devexperts.util.LogUtil;
 
 class ServerSocketSource extends SocketSource {
 	private static final Logging log = Logging.getLogging(ServerSocketConnector.class);
@@ -27,10 +31,10 @@ class ServerSocketSource extends SocketSource {
 			return new SocketInfo(socket, new SocketAddress(socket.getInetAddress().getHostAddress(), socket.getPort()));
 		} catch (Throwable t) {
 			try {
-				log.error("Failed to configure socket " + SocketUtil.getAcceptedSocketAddress(socket), t);
+				log.error("Failed to configure socket " + LogUtil.hideCredentials(SocketUtil.getAcceptedSocketAddress(socket)), t);
 				socket.close();
 			} catch (Throwable tt) {
-				log.error("Failed to close socket " + SocketUtil.getAcceptedSocketAddress(socket), t);
+				log.error("Failed to close socket " + LogUtil.hideCredentials(SocketUtil.getAcceptedSocketAddress(socket)), t);
 			}
 			return null;
 		}

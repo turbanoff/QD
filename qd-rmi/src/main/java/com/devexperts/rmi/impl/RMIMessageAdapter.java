@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.rmi.impl;
 
@@ -22,6 +25,7 @@ import com.devexperts.qd.qtp.auth.QDAuthRealm;
 import com.devexperts.qd.qtp.auth.QDLoginHandler;
 import com.devexperts.qd.stats.QDStats;
 import com.devexperts.rmi.RMIEndpoint;
+import com.devexperts.util.LogUtil;
 import com.devexperts.util.TypedMap;
 
 /**
@@ -301,7 +305,7 @@ class RMIMessageAdapter extends MessageAdapter implements MasterMessageAdapter {
 	}
 
 	private void processLegacyConnection() {
-		QDLog.log.warn("Legacy connection (pre QDS 3.69) is detected. Assuming RMI is supported at " + getRemoteHostAddress());
+		QDLog.log.warn("Legacy connection (pre QDS 3.69) is detected. Assuming RMI is supported at " + LogUtil.hideCredentials(getRemoteHostAddress()));
 		setRemoteReceiveSet(EnumSet.of(
 			MessageType.RMI_DESCRIBE_SUBJECT, MessageType.RMI_DESCRIBE_OPERATION,
 			MessageType.RMI_REQUEST, MessageType.RMI_CANCEL,

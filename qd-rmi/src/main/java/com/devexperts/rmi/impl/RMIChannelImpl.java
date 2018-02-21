@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.rmi.impl;
 
@@ -173,8 +176,10 @@ class RMIChannelImpl extends RMIClientPortImpl implements RMIChannel {
 			preOpenIncomingRequests = null;
 		}
 		state = RMIChannelState.CLOSED;
-		if (connection != null)
+		if (connection != null) {
 			connection.channelsManager.removeChannel(channelId, type);
+			connection.tasksManager.notifyTaskCompleted(owner, channelId);
+		}
 	}
 
 	synchronized RMIService<?> getHandler(String handlerName) {
@@ -194,13 +199,14 @@ class RMIChannelImpl extends RMIClientPortImpl implements RMIChannel {
  	}
 
 	synchronized void cancel(RMICancelType cancel) {
-		if (type != RMIChannelType.CLIENT_CHANNEL) {
+		if (type == RMIChannelType.SERVER_CHANNEL) {
 			if (cancel == RMICancelType.ABORT_RUNNING)
 				((RMITaskImpl<?>)owner).cancel();
 			else
 				((RMITaskImpl<?>)owner).cancelWithConfirmation();
 			return;
 		}
+		//for top-level request
 		RMIRequest<Void> cancelChannel = createRequest(new RMIRequestMessage<>(RMIRequestType.ONE_WAY,
 			cancel == RMICancelType.ABORT_RUNNING ? RMIRequestImpl.ABORT_CANCEL : RMIRequestImpl.CANCEL_WITH_CONFIRMATION, 0L));
 		cancelChannel.setListener(request -> this.close());

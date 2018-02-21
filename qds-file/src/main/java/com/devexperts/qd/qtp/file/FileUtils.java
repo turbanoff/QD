@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.qtp.file;
 
@@ -15,6 +18,7 @@ import java.net.URL;
 
 import com.devexperts.io.URLInputStream;
 import com.devexperts.qd.QDLog;
+import com.devexperts.util.LogUtil;
 
 class FileUtils {
 	
@@ -44,7 +48,7 @@ class FileUtils {
 	public static String getTimeFilePath(String dataFilePath, String dataFileExtension, String containerExtension) {
 		String fullExtension = dataFileExtension + containerExtension;
 		if (!dataFilePath.endsWith(fullExtension))
-			throw new IllegalArgumentException("File path '" + dataFilePath + "' is expected to end with extension '" + fullExtension + "'");
+			throw new IllegalArgumentException("File path '" + LogUtil.hideCredentials(dataFilePath) + "' is expected to end with extension '" + fullExtension + "'");
 		return dataFilePath.substring(0, dataFilePath.length() - fullExtension.length()) + TIME_FILE_EXTENSION + containerExtension;
 	}
 
@@ -52,7 +56,7 @@ class FileUtils {
 		try {
 			return URLInputStream.resolveURL(address);
 		} catch (MalformedURLException e) {
-			throw new IllegalArgumentException("Invalid address url: " + address, e);
+			throw new IllegalArgumentException("Invalid address URL: " + LogUtil.hideCredentials(address), e);
 		}
 	}
 
@@ -67,7 +71,7 @@ class FileUtils {
 			try {
 				closeable.close();
 			} catch (Throwable t) {
-				QDLog.log.error("Failed to close " + address, t);
+				QDLog.log.error("Failed to close " + LogUtil.hideCredentials(address), t);
 			}
 	}
 }

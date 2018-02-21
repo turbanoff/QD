@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.io;
 
@@ -17,6 +20,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.devexperts.logging.Logging;
+import com.devexperts.util.LogUtil;
 
 /**
  * Defines context of deserialization operation. Class contains whitelist, blacklist and classLoader.
@@ -109,7 +113,7 @@ public class SerialClassContext {
 						set = set.add(StringPrefixSet.valueOf(name));
 				}
 			} catch (IOException e) {
-				log.error("Cannot read " + url, e);
+				log.error("Cannot read " + LogUtil.hideCredentials(url), e);
 			}
 		}
 		return set;

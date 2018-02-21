@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.dxfeed.api.impl;
 
@@ -456,7 +459,7 @@ public class DXEndpointImpl extends ExtensibleDXEndpoint implements MessageConne
 		return "DXEndpoint{" +
 			"role=" + role +
 			", scheme=" + scheme.getClass().getSimpleName() +
-			", address=" + address +
+			", address=" + LogUtil.hideCredentials(address) +
 			(isClosed() ? ", closed" : "") +
 			'}';
 	}
@@ -600,7 +603,7 @@ public class DXEndpointImpl extends ExtensibleDXEndpoint implements MessageConne
 		}
 
 		private void failedToLoadFrom(String name, String propFileKey, IOException e) {
-			QDLog.log.error("Failed to load " + propFileKey + " from " + name, e);
+			QDLog.log.error("Failed to load " + propFileKey + " from " + LogUtil.hideCredentials(name), e);
 		}
 
 		@Override
@@ -698,6 +701,12 @@ public class DXEndpointImpl extends ExtensibleDXEndpoint implements MessageConne
 				dxEndpoint.initConnectivity();
 			}
 			return rmiEndpoint;
+		}
+
+		@Override
+		public boolean supportsProperty(String key) {
+			return super.supportsProperty(key)
+				|| qdEndpointBuilder.supportsProperty(key);
 		}
 	}
 

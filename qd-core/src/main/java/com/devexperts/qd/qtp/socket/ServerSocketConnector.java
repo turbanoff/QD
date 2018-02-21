@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.qtp.socket;
 
@@ -13,15 +16,21 @@ import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.devexperts.connector.codec.CodecConnectionFactory;
+import com.devexperts.connector.codec.CodecFactory;
 import com.devexperts.connector.proto.ApplicationConnectionFactory;
+import com.devexperts.connector.proto.ConfigurationKey;
 import com.devexperts.qd.QDFactory;
+import com.devexperts.qd.QDLog;
 import com.devexperts.qd.qtp.*;
 import com.devexperts.qd.qtp.help.MessageConnectorProperty;
 import com.devexperts.qd.qtp.help.MessageConnectorSummary;
 import com.devexperts.qd.stats.QDStats;
 import com.devexperts.qd.util.QDConfig;
+import com.devexperts.services.Services;
 import com.devexperts.transport.stats.ConnectionStats;
 import com.devexperts.transport.stats.EndpointStats;
+import com.devexperts.util.LogUtil;
 
 /**
  * The <code>ServerSocketConnector</code> handles standard server socket using blocking API.
@@ -39,19 +48,14 @@ public class ServerSocketConnector extends AbstractMessageConnector implements S
 	protected boolean useTls;
 
 	protected final Set<SocketHandler> handlers = new HashSet<>();
-	protected final SocketHandler.CloseListener closeListener = new SocketHandler.CloseListener() {
-		@Override
-		public void handlerClosed(SocketHandler handler) {
-			ServerSocketConnector.this.handlerClosed(handler);
-		}
-	};
+	protected final SocketHandler.CloseListener closeListener = this::handlerClosed;
 
 	protected volatile SocketAcceptor acceptor;
 
 	/**
 	 * Creates new server socket connector.
 	 *
-	 * @deprecated use {@link #ServerSocketConnector(com.devexperts.connector.proto.ApplicationConnectionFactory, int)}
+	 * @deprecated use {@link #ServerSocketConnector(ApplicationConnectionFactory, int)}
 	 * @param factory message adapter factory to use
 	 * @param port TCP port to use
 	 * @throws NullPointerException if {@code factory} is {@code null}
@@ -121,13 +125,35 @@ public class ServerSocketConnector extends AbstractMessageConnector implements S
 		return useTls;
 	}
 
-	@MessageConnectorProperty("Use SSLServerSocketFactory")
+	@MessageConnectorProperty(
+		value = "Use SSLConnectionFactory",
+		deprecated = "Use tls or ssl codec in address string. For example tls+<address>"
+	)
 	public synchronized void setTls(boolean useTls) {
 		if (this.useTls != useTls) {
+			if (useTls) {
+				CodecFactory sslCodecFactory = Services.createService(CodecFactory.class, null, "com.devexperts.connector.codec.ssl.SSLCodecFactory");
+				if (sslCodecFactory == null) {
+					log.error("SSLCodecFactory is not found. Using the SSL protocol is not supported");
+					return;
+				}
+				ApplicationConnectionFactory factory = sslCodecFactory.createCodec("ssl", getFactory());
+				factory.setConfiguration(ConfigurationKey.create("isServer", String.class), "true");
+				setFactory(factory);
+			} else {
+				CodecConnectionFactory sslFactory = (CodecConnectionFactory)getFactory();
+				if (!sslFactory.getClass().getSimpleName().contains("SSLCodecFactory")) {
+					log.error("SSLCodecFactory not found. SSL protocol is not used");
+					return;
+				}
+				setFactory(sslFactory.getDelegate());
+			}
 			log.info("Setting useTls=" + useTls);
 			this.useTls = useTls;
 			reconfigure();
 		}
+		QDLog.log.warn("WARNING: DEPRECATED use \"setTls()\" method from program or \"tls\" property from address string. " +
+			"Use tls or ssl codec in address string. For example tls+<address>");
 	}
 
 	/**
@@ -177,7 +203,7 @@ public class ServerSocketConnector extends AbstractMessageConnector implements S
 	public synchronized void start() {
 		if (acceptor != null)
 			return;
-		log.info("Starting ServerSocketConnector to " + getAddress());
+		log.info("Starting ServerSocketConnector to " + LogUtil.hideCredentials(getAddress()));
 		// create default stats instance if specific one was not provided.
 		if (getStats() == null)
 			setStats(QDFactory.getDefaultFactory().createStats(QDStats.SType.SERVER_SOCKET_CONNECTOR, null));

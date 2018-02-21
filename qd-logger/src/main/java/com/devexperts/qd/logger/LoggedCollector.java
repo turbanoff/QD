@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.logger;
 
@@ -15,6 +18,7 @@ import com.devexperts.qd.impl.AbstractCollector;
 import com.devexperts.qd.ng.RecordSink;
 import com.devexperts.qd.ng.RecordSource;
 import com.devexperts.qd.stats.QDStats;
+import com.devexperts.util.LogUtil;
 
 public class LoggedCollector extends AbstractCollector {
 	protected Logger log;
@@ -47,7 +51,7 @@ public class LoggedCollector extends AbstractCollector {
 
 	@Override
 	public void setStoreEverythingFilter(SubscriptionFilter filter) {
-		log.debug("setStoreEverythingFilter(" + filter + ")");
+		log.debug("setStoreEverythingFilter(" + LogUtil.hideCredentials(filter) + ")");
 		delegate.setStoreEverythingFilter(filter);
 	}
 

@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.dxfeed.api;
 
@@ -198,7 +201,7 @@ public abstract class DXFeed {
 	 * {@link DXFeedSubscription#addEventListener} to get notified about data changes
 	 * and can change its data subscription via {@link DXFeedSubscription} methods.
 	 *
-	 * <h5>Implementation notes</h5>
+	 * <h3>Implementation notes</h3>
 	 *
 	 * This method adds a non-serializable {@link ObservableSubscriptionChangeListener} for the given subscription
 	 * via {@link DXFeedSubscription#addChangeListener} method.
@@ -215,7 +218,7 @@ public abstract class DXFeed {
 	 * Detaches the given subscription from this feed. This method does nothing if the
 	 * corresponding subscription is not attached to this feed.
 	 *
-	 * <h5>Implementation notes</h5>
+	 * <h3>Implementation notes</h3>
 	 *
 	 * This method removes {@link ObservableSubscriptionChangeListener} from the given subscription
 	 * via {@link DXFeedSubscription#removeChangeListener} method.

@@ -1,20 +1,26 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.dxfeed.event.market;
-
-import java.util.*;
 
 import com.devexperts.util.SynchronizedIndexedSet;
 import com.dxfeed.api.DXFeed;
 import com.dxfeed.api.DXPublisher;
 import com.dxfeed.api.osub.IndexedEventSubscriptionSymbol;
 import com.dxfeed.event.IndexedEventSource;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Identifies source of {@link Order} and {@link SpreadOrder} events.
@@ -121,6 +127,27 @@ public final class OrderSource extends IndexedEventSource {
 	public static final OrderSource NTV = new OrderSource("NTV", PUB_ORDER);
 
 	/**
+	 * NASDAQ Futures Exchange.
+	 * {@link Order} events are {@link #isPublishable(Class) publishable} on this
+	 * source and the corresponding subscription can be observed via {@link DXPublisher}.
+	 */
+	public static final OrderSource NFX = new OrderSource("NFX", PUB_ORDER);
+
+	/**
+	 * NASDAQ eSpeed.
+	 * {@link Order} events are {@link #isPublishable(Class) publishable} on this
+	 * source and the corresponding subscription can be observed via {@link DXPublisher}.
+	 */
+	public static final OrderSource ESPD = new OrderSource("ESPD", PUB_ORDER);
+
+	/**
+	 * Intercontinental Exchange.
+	 * {@link Order} events are {@link #isPublishable(Class) publishable} on this
+	 * source and the corresponding subscription can be observed via {@link DXPublisher}.
+	 */
+	public static final OrderSource ICE = new OrderSource("ICE", PUB_ORDER);
+
+	/**
 	 * International Securities Exchange.
 	 * {@link Order} and {@link SpreadOrder} events are {@link #isPublishable(Class) publishable} on this
 	 * source and the corresponding subscription can be observed via {@link DXPublisher}.
@@ -156,11 +183,53 @@ public final class OrderSource extends IndexedEventSource {
 	public static final OrderSource BZX = new OrderSource("BZX", PUB_ORDER);
 
 	/**
+	 * Bats Europe BXE Exchange.
+	 * {@link Order} events are {@link #isPublishable(Class) publishable} on this
+	 * source and the corresponding subscription can be observed via {@link DXPublisher}.
+	 */
+	public static final OrderSource BATE = new OrderSource("BATE", PUB_ORDER);
+
+	/**
+	 * Bats Europe CXE Exchange.
+	 * {@link Order} events are {@link #isPublishable(Class) publishable} on this
+	 * source and the corresponding subscription can be observed via {@link DXPublisher}.
+	 */
+	public static final OrderSource CHIX = new OrderSource("CHIX", PUB_ORDER);
+
+	/**
+	 * Bats Europe TRF.
+	 * {@link Order} events are {@link #isPublishable(Class) publishable} on this
+	 * source and the corresponding subscription can be observed via {@link DXPublisher}.
+	 */
+	public static final OrderSource BXTR = new OrderSource("BXTR", PUB_ORDER);
+
+	/**
 	 * Borsa Istanbul Exchange.
 	 * {@link Order} events are {@link #isPublishable(Class) publishable} on this
 	 * source and the corresponding subscription can be observed via {@link DXPublisher}.
 	 */
 	public static final OrderSource IST = new OrderSource("IST", PUB_ORDER);
+
+	/**
+	 * CME Globex.
+	 * {@link Order} events are {@link #isPublishable(Class) publishable} on this
+	 * source and the corresponding subscription can be observed via {@link DXPublisher}.
+	 */
+	public static final OrderSource GLBX = new OrderSource("GLBX", PUB_ORDER);
+
+	/**
+	 * Eurex Exchange.
+	 * {@link Order} events are {@link #isPublishable(Class) publishable} on this
+	 * source and the corresponding subscription can be observed via {@link DXPublisher}.
+	 */
+	public static final OrderSource XEUR = new OrderSource("XEUR", PUB_ORDER);
+
+	/**
+	 * CBOE Futures Exchange.
+	 * {@link Order} events are {@link #isPublishable(Class) publishable} on this
+	 * source and the corresponding subscription can be observed via {@link DXPublisher}.
+	 */
+	public static final OrderSource CFE = new OrderSource("CFE", PUB_ORDER);
 
 	/**
 	 * Determines whether specified source identifier refers to special order source.

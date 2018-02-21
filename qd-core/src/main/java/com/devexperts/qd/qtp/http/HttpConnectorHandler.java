@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.qtp.http;
 
@@ -18,6 +21,7 @@ import com.devexperts.io.ChunkList;
 import com.devexperts.qd.qtp.*;
 import com.devexperts.qd.stats.QDStats;
 import com.devexperts.util.Base64;
+import com.devexperts.util.LogUtil;
 
 class HttpConnectorHandler extends AbstractConnectionHandler<HttpConnector> {
 	// --- initial config parameters copied from connector ---
@@ -88,7 +92,7 @@ class HttpConnectorHandler extends AbstractConnectionHandler<HttpConnector> {
 		QDStats stats = this.stats;
 		if (stats != null)
 			stats.close();
-		log.error("Disconnected from " + address, reason);
+		log.error("Disconnected from " + LogUtil.hideCredentials(address), reason);
 		connector.handlerClosed(this);
 	}
 
@@ -220,11 +224,11 @@ class HttpConnectorHandler extends AbstractConnectionHandler<HttpConnector> {
 	protected void doWork() throws InterruptedException, IOException {
 		URL url = new URL(address); // fail early if URL is malformed
 		reconnectHelper.sleepBeforeConnection();
-		log.info("Connecting to " + address);
+		log.info("Connecting to " + LogUtil.hideCredentials(address));
 		ApplicationConnection<?> connection = connect(url);
 		if (connection == null)
 			return;
-		log.info("Connected to " + address);
+		log.info("Connected to " + LogUtil.hideCredentials(address));
 		while (!isClosed()) {
 			synchronized (messagesLock) {
 				if (!messagesAvailable && !hasMore) {

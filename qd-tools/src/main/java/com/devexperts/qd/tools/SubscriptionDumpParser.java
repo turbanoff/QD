@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.tools;
 
@@ -17,6 +20,7 @@ import com.devexperts.logging.Logging;
 import com.devexperts.qd.*;
 import com.devexperts.qd.impl.matrix.SubscriptionDumpVisitor;
 import com.devexperts.services.ServiceProvider;
+import com.devexperts.util.LogUtil;
 import com.devexperts.util.TimeFormat;
 
 /**
@@ -211,7 +215,7 @@ public class SubscriptionDumpParser extends AbstractTool {
 			try {
 				readFile(fileName);
 			} catch (IOException e) {
-				log.error("Failed to read file " + fileName, e);
+				log.error("Failed to read file " + LogUtil.hideCredentials(fileName), e);
 			}
 		}
 
@@ -230,7 +234,7 @@ public class SubscriptionDumpParser extends AbstractTool {
 			try {
 				dumpToFile(outputFile, group.isSet() ? comparator : null);
 			} catch (IOException e) {
-				log.error("Failed to dump to " + outputFile, e);
+				log.error("Failed to dump to " + LogUtil.hideCredentials(outputFile), e);
 			}
 		}
 	}
@@ -250,7 +254,7 @@ public class SubscriptionDumpParser extends AbstractTool {
 			String qdVersion = readString(in, version);
 			String schemeName = readString(in, version);
 			String codecName = readString(in, version);
-			log.info("File " + fileName + " was written at " + TimeFormat.DEFAULT.format(time) +
+			log.info("File " + LogUtil.hideCredentials(fileName) + " was written at " + TimeFormat.DEFAULT.format(time) +
 				" by " + qdVersion + " with scheme " + schemeName + " and codec " + codecName);
 			if (!schemeName.equals(scheme.getClass().getName()))
 				throw new IOException("Wrong scheme");
@@ -346,7 +350,7 @@ public class SubscriptionDumpParser extends AbstractTool {
 			columns.isSet() ? columns.getValue() : DEFAULT_COLUMNS).toCharArray();
 		try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file), 100000))) {
 			int n = subs.size();
-			log.info(n + " subscription entities have been collected, writing to " + file);
+			log.info(n + " subscription entities have been collected, writing to " + LogUtil.hideCredentials(file));
 			for (int i = 0; i < n; i++) {
 				SubRecord sub = subs.get(i);
 				if (groupComparator != null) {

@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 
 (function($) {
@@ -13,6 +16,19 @@
 	var dx = window.dx = window.dx || {}; // window.dx namespace
 
 	// ===== private utility functions =====
+
+	var scriptPath = (function() {
+		var path = "/";
+		if (document.currentScript) {
+			path = document.currentScript.src;
+		} else {
+			var scripts = document.getElementsByTagName('script');
+			if (scripts != null && scripts.length > 0) {
+				path = scripts[scripts.length-1].src;
+			}
+		}
+		return path;
+	})();
 
 	var hasOwnProperty = Object.prototype.hasOwnProperty;
 
@@ -279,7 +295,8 @@
 	function EndpointImpl() {
 		var endpointImpl = this;
 		var config = {};
-		var cometd = null; // current cometd instance
+ 		var authToken = null;
+ 		var cometd = null; // current cometd instance
 		var connected = false;
 		var connectCalled = false; // for automatic connect on first use
 
@@ -323,6 +340,17 @@
 			}
 		}
 
+		function onMetaHandshake(message) {
+			if (cometd === null || cometd.isDisconnected()) {
+				updateConnectedState(false);
+				return;
+			}
+			if (!message.successful) {
+				info("Authentication failed or no token provided");
+			}
+			updateConnectedState(message.successful === true);
+ 		}
+
 		// Function that manages the connection status with the Bayeux server
 		function onMetaConnect(message) {
 			if (cometd === null || cometd.isDisconnected()) {
@@ -357,8 +385,18 @@
 				warn("No CometD, working without connection");
 				return;
 			}
-			if (config.url === undefined && dx.contextPath !== undefined)
-				config.url = dx.contextPath + "/cometd"; // default webservice path
+			if (config.url === undefined) {
+				if (dx.contextPath === undefined && scriptPath != null) {
+					// guess context path relative to this script - "../../.."
+					var path = scriptPath;
+					for (var i = 0; i < 3; i++)
+						path = path.replace(/\/[^/]*$/, "")
+
+					dx.contextPath = path;
+				}
+				// default webservice path
+				config.url = dx.contextPath + "/cometd";
+			}
 			if (typeof url === "string") {
 				config.url = url;
 			} else if (typeof url === "object") {
@@ -368,6 +406,7 @@
 			info("Connecting with url: " + config.url);
 			if (cometd === null) {
 				cometd = new $.CometD();
+				cometd.addListener("/meta/handshake", onMetaHandshake);
 				cometd.addListener("/meta/connect", onMetaConnect);
 				cometd.addListener("/meta/unsuccessful", onMetaUnsuccessful);
 				cometd.addListener("/service/state", onServiceState);
@@ -375,13 +414,22 @@
 				cometd.addListener("/service/timeSeriesData", onServiceTimeSeriesData);
 			}
 			cometd.configure(config);
-			cometd.handshake();
+			if (authToken === null) {
+				cometd.handshake();
+			} else {
+				debug("Using auth token: " + authToken);
+				cometd.handshake({ ext: { "com.devexperts.auth.AuthToken": authToken }});
+			}
 		}
 
 		// ----- public endpointImpl methods -----
 
 		this.logLevel = function (level) {
 			config.logLevel = level;
+		};
+
+		this.setAuthToken = function (token) {
+			authToken = token;
 		};
 
 		this.isConnected = function () {
@@ -862,6 +910,11 @@
 
 			logLevel : function (level) {
 				endpointImpl.logLevel(level);
+				return feed;
+			},
+
+			setAuthToken : function (token) {
+				endpointImpl.setAuthToken(token);
 				return feed;
 			},
 

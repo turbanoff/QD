@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.impl.matrix.management.dump;
 
@@ -23,6 +26,7 @@ import com.devexperts.qd.QDFactory;
 import com.devexperts.qd.QDLog;
 import com.devexperts.qd.impl.matrix.management.DebugDump;
 import com.devexperts.qd.impl.matrix.management.impl.Exec;
+import com.devexperts.util.LogUtil;
 
 import static com.devexperts.qd.impl.matrix.management.dump.DebugDumpConst.*;
 
@@ -70,14 +74,14 @@ public class DebugDumpImpl implements DebugDump {
 				try {
 					new DebugDumpImpl().makeDump(file, owner, null);
 				} catch (Throwable t) {
-					QDLog.log.error("Failed to dump to " + file, t);
+					QDLog.log.error("Failed to dump to " + LogUtil.hideCredentials(file), t);
 				}
 			}
 		});
 	}
 
 	public void makeDump(String file, Object owner, Throwable t) throws IOException {
-		log.info("Dumping objects in internal format to '" + file + "' file...");
+		log.info("Dumping objects in internal format to '" + LogUtil.hideCredentials(file));
 		putObject(owner, OWNER);
 		putObject(QDFactory.getVersion(), VERSION);
 		try {

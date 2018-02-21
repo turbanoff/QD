@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.tools.analysis;
 
@@ -22,6 +25,7 @@ import com.devexperts.qd.tools.*;
 import com.devexperts.services.ServiceProvider;
 import com.devexperts.transport.stats.ConnectionStats;
 import com.devexperts.util.GlobListUtil;
+import com.devexperts.util.LogUtil;
 
 @ToolSummary(
 	info = "Analyses binary file and distribution of various structures in it.",
@@ -59,7 +63,7 @@ public class FileAnalysis extends AbstractTool {
 
 		// analyze url
 		String url = args[0];
-		QDLog.log.info("Analyzing " + url);
+		QDLog.log.info("Analyzing " + LogUtil.hideCredentials(url));
 
 		FileReaderParams.Default params = new FileReaderParams.Default();
 		String dataFilePath = FileReader.parseParameters(url, params);

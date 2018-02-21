@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.tools;
 
@@ -17,6 +20,7 @@ import com.devexperts.qd.ng.*;
 import com.devexperts.qd.qtp.*;
 import com.devexperts.qd.util.SymbolObjectMap;
 import com.devexperts.services.ServiceProvider;
+import com.devexperts.util.LogUtil;
 import com.devexperts.util.TimeFormat;
 
 /**
@@ -122,7 +126,7 @@ public class Compare extends AbstractTool {
 			connector2 = connector1;
 		}
 
-		log.info("Using address " + MessageConnectors.maskAuthorizationData(address));
+		log.info("Using address " + LogUtil.hideCredentials(address));
 		endpoint1 = collector.createEndpoint(names.getName(0));
 		Processor processor1 = new Processor(scheme, recordFieldsArr);
 		connector1.subscribe(endpoint1, processor1);
@@ -130,7 +134,7 @@ public class Compare extends AbstractTool {
 		connectors.addAll(endpoint1.getConnectors());
 
 		if (otherAddress.isSet())
-			log.info("Using other address " + MessageConnectors.maskAuthorizationData(otherAddress.getValue()));
+			log.info("Using other address " + LogUtil.hideCredentials(otherAddress.getValue()));
 
 		endpoint2 = (otherCollector.isSet() ? otherCollector : collector).createEndpoint(names.getName(1));
 		Processor processor2 = new Processor(scheme, recordFieldsArr);

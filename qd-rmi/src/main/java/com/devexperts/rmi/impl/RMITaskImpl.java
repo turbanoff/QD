@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.rmi.impl;
 
@@ -116,7 +119,8 @@ public class RMITaskImpl<T> extends RMITask<T> implements RMIChannelOwner {
 		response.getMarshalledResult().getBytes();
 		if (!isNestedTask())
 			channel.close();
-		tasksManager.notifyTaskCompleted(this);
+		else
+			tasksManager.notifyTaskCompleted(this);
 		if (executionTask != null)
 			executionTask.updateState(submitNextInQueue); // force sync of execution task's state
 	}

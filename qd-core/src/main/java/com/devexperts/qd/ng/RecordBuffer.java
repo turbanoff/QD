@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.ng;
 
@@ -706,6 +709,12 @@ public final class RecordBuffer extends RecordSource implements
 	 * @throws IllegalStateException when adding records to an object that was already {@link #release() released} into pool.
 	 */
 	public void process(RecordSource source, SubscriptionFilter filter) {
+		if (released)
+			Throws.throwReleased();
+		if (source instanceof RecordBuffer && filter == null) {
+			if (fastCopyFrom((RecordBuffer)source))
+				return;
+		}
 		for (RecordCursor cursor; (cursor = source.next()) != null;)
 			if (filter == null || filter.acceptRecord(cursor.getRecord(), cursor.getCipher(), cursor.getSymbol()))
 				append(cursor);
@@ -807,15 +816,7 @@ public final class RecordBuffer extends RecordSource implements
 		compactObjs();
 		resetCursorsAccess();
 		// recompute size
-		size = 0;
-		int iPos = 0;
-		int oPos = 0;
-		while (iPos < intLimit) {
-			DataRecord record = (DataRecord)objFlds[oPos + OBJ_RECORD];
-			iPos += mode.intBufOffset + mode.intFieldCount(record);
-			oPos += mode.objBufOffset + mode.objFieldCount(record);
-			size++;
-		}
+		size = computeIteratorSize();
 	}
 
 	/**
@@ -1231,6 +1232,38 @@ public final class RecordBuffer extends RecordSource implements
 
 	//----------------------- private utility methods -----------------------
 
+	private boolean fastCopyFrom(RecordBuffer source) {
+		if (source.intPosition >= source.intLimit)
+			return true;
+		if (source.mode != mode)
+			return false;
+		int iInc = source.intLimit - source.intPosition;
+		int oInc = source.objLimit - source.objPosition;
+		growIntsIfNeeded(iInc);
+		growObjsIfNeeded(oInc);
+		System.arraycopy(source.intFlds, source.intPosition, intFlds, intLimit, iInc);
+		System.arraycopy(source.objFlds, source.objPosition, objFlds, objLimit, oInc);
+		intLimit += iInc;
+		objLimit += oInc;
+		size += source.intPosition == 0 ? source.size : source.computeIteratorSize();
+		source.intPosition = source.intLimit;
+		source.objPosition = source.objLimit;
+		return true;
+	}
+
+	private int computeIteratorSize() {
+		int s = 0;
+		int iPos = intPosition;
+		int oPos = objPosition;
+		while (iPos < intLimit) {
+			DataRecord record = (DataRecord)objFlds[oPos + OBJ_RECORD];
+			iPos += mode.intBufOffset + mode.intFieldCount(record);
+			oPos += mode.objBufOffset + mode.objFieldCount(record);
+			s++;
+		}
+		return s;
+	}
+
 	private void incPosition(RecordCursor cursor) {
 		intPosition += mode.intBufOffset + cursor.intCount;
 		objPosition += mode.objBufOffset + cursor.objCount;
@@ -1260,6 +1293,8 @@ public final class RecordBuffer extends RecordSource implements
 	}
 
 	private void growIntsIfNeeded(int iInc) {
+		if (intLimit + iInc < 0)
+			throw new ArrayIndexOutOfBoundsException(intLimit + iInc);
 		if (intFlds.length < intLimit + iInc)
 			growInts(iInc);
 	}
@@ -1273,6 +1308,8 @@ public final class RecordBuffer extends RecordSource implements
 	}
 
 	private void growObjsIfNeeded(int oInc) {
+		if (objLimit + oInc < 0)
+			throw new ArrayIndexOutOfBoundsException(objLimit + oInc);
 		if (objFlds.length < objLimit + oInc)
 			growObjs(oInc);
 	}
@@ -1286,6 +1323,8 @@ public final class RecordBuffer extends RecordSource implements
 	}
 
 	private void growOrCompactIntsIfNeeded(int iInc) {
+		if (intLimit + iInc < 0)
+			throw new ArrayIndexOutOfBoundsException(intLimit + iInc);
 		if (intFlds.length < intLimit + iInc)
 			growOrCompactInts(iInc);
 	}
@@ -1297,6 +1336,8 @@ public final class RecordBuffer extends RecordSource implements
 	}
 
 	private void growOrCompactObjsIfNeeded(int oInc) {
+		if (objLimit + oInc < 0)
+			throw new ArrayIndexOutOfBoundsException(objLimit + oInc);
 		if (objFlds.length < objLimit + oInc)
 			growOrCompactObjs(oInc);
 	}

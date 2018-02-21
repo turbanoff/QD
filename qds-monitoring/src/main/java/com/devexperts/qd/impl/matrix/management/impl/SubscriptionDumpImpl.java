@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.impl.matrix.management.impl;
 
@@ -17,6 +20,7 @@ import com.devexperts.io.StreamOutput;
 import com.devexperts.qd.*;
 import com.devexperts.qd.impl.matrix.Collector;
 import com.devexperts.qd.impl.matrix.SubscriptionDumpVisitor;
+import com.devexperts.util.LogUtil;
 
 public class SubscriptionDumpImpl implements SubscriptionDumpVisitor {
 	public static void makeDump(final String file, final DataScheme scheme, final List<Collector> list) {
@@ -26,14 +30,14 @@ public class SubscriptionDumpImpl implements SubscriptionDumpVisitor {
 				try {
 					makeDumpImpl(file, scheme, list);
 				} catch (Throwable t) {
-					QDLog.log.error("Failed to dump subscription to '" + file + "' file.", t);
+					QDLog.log.error("Failed to dump subscription to " + LogUtil.hideCredentials(file), t);
 				}
 			}
 		});
 	}
 
 	private static void makeDumpImpl(String file, DataScheme scheme, List<Collector> list) throws IOException {
-		QDLog.log.info("Dumping subscription for " + list.size() + " collector(s) to '" + file + "' file...");
+		QDLog.log.info("Dumping subscription for " + list.size() + " collector(s) to " + LogUtil.hideCredentials(file));
 		try (StreamOutput out = new StreamOutput(new FileOutputStream(file), 100000)) {
 			SubscriptionDumpImpl visitor = new SubscriptionDumpImpl(scheme, out);
 			visitor.writeHeader();

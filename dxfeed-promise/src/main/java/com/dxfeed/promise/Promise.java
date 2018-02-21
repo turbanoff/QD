@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.dxfeed.promise;
 
@@ -39,7 +42,7 @@ import java.util.concurrent.*;
  * <pre>
  *     public Promise&lt;T&gt; findSomethingPromise(Args args) {
  *         Promise&lt;T&gt; promise = new {@link #Promise() Promise}&lt;T&gt;();
- *         executor.{@link Executor#execute(Runnable) execute}(() -> {
+ *         executor.{@link Executor#execute(Runnable) execute}(() -&gt; {
  *             try {
  *                 T result = findSomething(args);
  *                 promise.{@link #complete(Object) complete}(result);
@@ -57,7 +60,7 @@ import java.util.concurrent.*;
  * <pre>
  *     public Promise&lt;T&gt; findSomethingPromise(Args args) {
  *         Promise&lt;T&gt; promise = new {@link #Promise() Promise}&lt;T&gt;();
- *         Future&lt;?&gt; future = executor.{@link ExecutorService#submit(Runnable) submit}(() -> {
+ *         Future&lt;?&gt; future = executor.{@link ExecutorService#submit(Runnable) submit}(() -&gt; {
  *             try {
  *                 T result = findSomething(args);
  *                 promise.{@link #complete(Object) complete}(result);
@@ -65,7 +68,7 @@ import java.util.concurrent.*;
  *                 promise.{@link #completeExceptionally(Throwable) completeExceptionally}(t);
  *             }
  *         });
- *         promise.whenDone(p -> future.{@link Future#cancel(boolean) cancel}(true)); // true to interrupt running task
+ *         promise.whenDone(p -&gt; future.{@link Future#cancel(boolean) cancel}(true)); // true to interrupt running task
  *         return promise;
  *     }</pre>
  *
@@ -85,7 +88,7 @@ import java.util.concurrent.*;
  * The same handling can be performed in the service provider thread like this:
  *
  * <pre>
- *     findSomething(args).whenDone(promise -> {
+ *     findSomething(args).whenDone(promise -&gt; {
  *         if (promise.hasResult())
  *            handleResult(promise.getResult());
  *         else

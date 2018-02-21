@@ -1,25 +1,24 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.qtp.socket;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
 import java.util.*;
-import javax.net.ssl.*;
 
-import com.devexperts.io.URLInputStream;
 import com.devexperts.logging.Logging;
 import com.devexperts.qd.qtp.ReconnectHelper;
-import com.devexperts.util.SystemProperties;
+import com.devexperts.util.LogUtil;
 
 /**
  * Implements load-balancing algorithm for {@link ClientSocketConnector} by resolving host
@@ -54,8 +53,6 @@ class ClientSocketSource extends SocketSource {
 	private final ReconnectHelper resolveHelper;
 	private final String hostNames;
 	private final int port;
-	private final boolean isTls;
-	private final SSLSocketFactory sslSocketFactory;
 
 	private final List<SocketAddress> parsedAddresses;
 
@@ -68,34 +65,7 @@ class ClientSocketSource extends SocketSource {
 		this.resolveHelper = new ReconnectHelper(connector.getReconnectDelay());
 		this.hostNames = connector.getHost();
 		this.port = connector.getPort();
-		this.isTls = connector.getTls();
-		this.sslSocketFactory = isTls ? initSslSocketFactory() : null; 
 		this.parsedAddresses = SocketUtil.parseAddressList(hostNames, port);
-	}
-
-	private SSLSocketFactory initSslSocketFactory() {
-		try {
-			TrustManager trustManager = connector.getTrustManager();
-			if (trustManager == null)
-				return (SSLSocketFactory)SSLSocketFactory.getDefault();
-
-			SSLContext context = SSLContext.getInstance("TLS");
-
-			String keyStoreUrl = SystemProperties.getProperty("javax.net.ssl.keyStore", null);
-			String keyStorePassword = SystemProperties.getProperty("javax.net.ssl.keyStorePassword", null);
-			String keyStoreProvider = SystemProperties.getProperty("javax.net.ssl.keyStoreProvider", null);
-			String keyStoreType = SystemProperties.getProperty("javax.net.ssl.keyStoreType", KeyStore.getDefaultType());
-
-			KeyStore keyStore = getKeyStore(keyStoreType, keyStoreProvider, keyStoreUrl, keyStorePassword);
-			KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-			keyManagerFactory.init(keyStore, keyStorePassword == null ? null : keyStorePassword.toCharArray());
-
-			context.init(keyManagerFactory.getKeyManagers(), new TrustManager[]{trustManager}, null);
-			return context.getSocketFactory();
-		} catch (Throwable t) {
-			log.error("Failed to configure SSL socket factory; connector will not start!");
-			throw new IllegalArgumentException(t);
-		}
 	}
 
 	@Override
@@ -109,13 +79,12 @@ class ClientSocketSource extends SocketSource {
 		SocketAddress address = nextAddress();
 		if (address == null)
 			return null;
-		String addressStr = address + (isTls ? " (using TLS)" : "");
 		ReconnectHelper reconnectHelper = reconnectHelpers.get(address);
 		if (reconnectHelper == null)
 			reconnectHelpers.put(address, reconnectHelper = new ReconnectHelper(connector.getReconnectDelay()));
 
 		reconnectHelper.sleepBeforeConnection();
-		log.info("Connecting to " + addressStr);
+		log.info("Connecting to " + LogUtil.hideCredentials(address));
 
 		Socket socket = null;
 		try {
@@ -127,7 +96,7 @@ class ClientSocketSource extends SocketSource {
 			} else {
 				// connect via HTTPS proxy
 				int proxyPort = connector.getProxyPort();
-				log.info("Using HTTPS proxy: " + proxyHost + ":" + proxyPort);
+				log.info("Using HTTPS proxy: " + LogUtil.hideCredentials(proxyHost) + ":" + proxyPort);
 				socket = new Socket(proxyHost, proxyPort);
 				configureSocket(socket);
 				String connectRequest = "CONNECT " + address.host + ":" + address.port + " HTTP/1.0\r\n\r\n";
@@ -141,19 +110,17 @@ class ClientSocketSource extends SocketSource {
 					throw new IOException("Unexpected response from HTTPS proxy: '" + response + "'");
 				for (String line; (line = readLine(input)) != null && line.length() > 0;) {} // skip HTTP header
 			}
-			if (isTls)
-				socket = sslSocketFactory.createSocket(socket, address.host, address.port, true);
 		} catch (Throwable t) {
-			log.error("Failed to connect to " + addressStr, t);
+			log.error("Failed to connect to " + LogUtil.hideCredentials(address), t);
 			if (socket != null)
 				try {
 					socket.close();
 				} catch (Throwable tt) {
-					log.error("Failed to close socket " + addressStr, tt);
+					log.error("Failed to close socket " + LogUtil.hideCredentials(address), tt);
 				}
 			return null;
 		}
-		log.info("Connected to " + addressStr);
+		log.info("Connected to " + LogUtil.hideCredentials(address));
 		return new SocketInfo(socket, address);
 	}
 
@@ -166,14 +133,6 @@ class ClientSocketSource extends SocketSource {
 			if (c != '\r')
 				sb.append((char)c);
 		return sb.toString();
-	}
-
-	private static KeyStore getKeyStore(String type, String provider, String url, String password) throws GeneralSecurityException, IOException {
-		KeyStore result = provider == null ?
-			KeyStore.getInstance(type) :
-			KeyStore.getInstance(type, provider);
-		result.load(url == null ? null : new URLInputStream(url), password == null ? null : password.toCharArray());
-		return result;
 	}
 
 	private SocketAddress nextAddress() throws InterruptedException {
@@ -189,7 +148,7 @@ class ClientSocketSource extends SocketSource {
 	}
 
 	public String toString() {
-		return hostNames + (port == 0 ? "" : ":" + port);
+		return LogUtil.hideCredentials(hostNames) + (port == 0 ? "" : ":" + port);
 	}
 
 	private void resolveAddresses() {
@@ -197,8 +156,7 @@ class ClientSocketSource extends SocketSource {
 		Set<SocketAddress> addresses = new HashSet<>();
 		for (SocketAddress parsedAddress : parsedAddresses) {
 			// Resolve all host addresses
-			if (log != null)
-				log.info("Resolving IPs for " + parsedAddress.host);
+			log.info("Resolving IPs for " + LogUtil.hideCredentials(parsedAddress.host));
 			try {
 				InetAddress[] temp = InetAddress.getAllByName(parsedAddress.host);
 				for (InetAddress inetAddress : temp)
@@ -207,8 +165,7 @@ class ClientSocketSource extends SocketSource {
 				// We may reside under HTTPS proxy without having access to DNS server.
 				// In this case let the proxy try to resolve the required address later.
 				// Otherwise we will just get another UnknownHostException later anyway.
-				if (log != null)
-					log.warn("Failed to resolve IPs for " + parsedAddress.host);
+				log.warn("Failed to resolve IPs for " + LogUtil.hideCredentials(parsedAddress.host));
 				addresses.add(new SocketAddress(parsedAddress.host, parsedAddress.port));
 			}
 		}

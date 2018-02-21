@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.ng.test;
 
@@ -248,6 +251,49 @@ public class RecordBufferTest extends TestCase {
 		assertEquals("ets3", baseEts << 2, cur.getEventTimeSequence());
 
 		assertEquals("no next", null, buf2.next());
+	}
+
+	public void testFastCopy() {
+		long baseEts = 0x123456789abcdefL;
+		RecordCursor cur;
+		RecordBuffer buf1 = RecordBuffer.getInstance(RecordMode.DATA.withEventTimeSequence());
+
+		cur = buf1.add(RECORD, 0, "TEST-SYM1");
+		cur.setEventTimeSequence(baseEts);
+		cur = buf1.add(RECORD, 0, "TEST-SYM2");
+		cur.setEventTimeSequence(baseEts << 1);
+		cur = buf1.add(RECORD, 0, "TEST-SYM3");
+		cur.setEventTimeSequence(baseEts << 2);
+		assertEquals("buf1.size", 3, buf1.size());
+
+		RecordBuffer buf2 = RecordBuffer.getInstance(buf1.getMode());
+		buf2.process(buf1);
+		assertEquals("buf2.size", 3, buf2.size());
+
+		cur = buf2.next();
+		assertEquals("symbol1", "TEST-SYM1", cur.getSymbol());
+		assertEquals("ets1", baseEts, cur.getEventTimeSequence());
+		cur = buf2.next();
+		assertEquals("symbol2", "TEST-SYM2", cur.getSymbol());
+		assertEquals("ets2", baseEts << 1, cur.getEventTimeSequence());
+		cur = buf2.next();
+		assertEquals("symbol3", "TEST-SYM3", cur.getSymbol());
+		assertEquals("ets3", baseEts << 2, cur.getEventTimeSequence());
+		assertEquals("no next", null, buf2.next());
+
+		buf1.rewind();
+		buf1.next();
+		RecordBuffer buf3 = RecordBuffer.getInstance(buf1.getMode());
+		buf3.process(buf1);
+		assertEquals("buf3.size", 2, buf3.size());
+
+		cur = buf3.next();
+		assertEquals("symbol2", "TEST-SYM2", cur.getSymbol());
+		assertEquals("ets2", baseEts << 1, cur.getEventTimeSequence());
+		cur = buf3.next();
+		assertEquals("symbol3", "TEST-SYM3", cur.getSymbol());
+		assertEquals("ets3", baseEts << 2, cur.getEventTimeSequence());
+		assertEquals("no next", null, buf3.next());
 	}
 
 	public void testVoid() {

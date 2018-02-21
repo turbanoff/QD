@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.mars.common;
 
@@ -13,6 +16,7 @@ import java.util.*;
 import com.devexperts.logging.Logging;
 import com.devexperts.mars.common.net.MARSConnector;
 import com.devexperts.services.Services;
+import com.devexperts.util.LogUtil;
 import com.devexperts.util.SystemProperties;
 
 /**
@@ -104,7 +108,7 @@ public class MARSEndpoint {
 			connector.setAddress(address);
 			connector.start();
 			connectors.add(connector);
-			log.info("MARS root is " + root + ", address is " + address);
+			log.info("MARS root is " + root + ", address is " + LogUtil.hideCredentials(address));
 		}
 		// create all plugins
 		for (MARSPlugin.Factory pluginFactory : Services.createServices(MARSPlugin.Factory.class, null)) {

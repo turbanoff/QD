@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.impl.matrix;
 
@@ -145,7 +148,11 @@ public class History extends Collector implements QDHistory {
 
 	protected History(Builder<?> builder) {
 		super(builder, true, true);
-		this.historyFilter = builder.getHistoryFilter();
+		HistorySubscriptionFilter historyFilter = builder.getHistoryFilter();
+		// If history filter is not specified in builder get it as service.
+		if (historyFilter == null)
+			historyFilter = builder.getScheme().getService(HistorySubscriptionFilter.class);
+		this.historyFilter = historyFilter;
 	}
 
 	//======================================= methods =======================================

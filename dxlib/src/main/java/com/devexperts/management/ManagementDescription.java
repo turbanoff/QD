@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.management;
 
@@ -13,7 +16,7 @@ import javax.management.MBeanOperationInfo;
 
 import com.devexperts.annotation.Description;
 
-/***
+/**
  * Description for managed type, operation, or attribute.
  * Attribute descriptions shall be attached to the corresponding getter method.
  *

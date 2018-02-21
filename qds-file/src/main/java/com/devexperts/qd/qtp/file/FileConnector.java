@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.qtp.file;
 
@@ -18,8 +21,7 @@ import com.devexperts.qd.qtp.help.MessageConnectorProperty;
 import com.devexperts.qd.qtp.help.MessageConnectorSummary;
 import com.devexperts.qd.util.QDConfig;
 import com.devexperts.transport.stats.EndpointStats;
-import com.devexperts.util.TimeFormat;
-import com.devexperts.util.TimePeriod;
+import com.devexperts.util.*;
 
 /**
  * Reads messages from a specified URL or file. By default when reading
@@ -74,7 +76,7 @@ public class FileConnector extends AbstractMessageConnector implements FileConne
 	public synchronized void start() {
 		if (isActive())
 			return;
-		log.info("Starting FileConnector to " + getAddress());
+		log.info("Starting FileConnector to " + LogUtil.hideCredentials(getAddress()));
 		handler = new FileReaderHandler(this);
 		handler.start();
 		notifyMessageConnectorListeners();
@@ -101,7 +103,7 @@ public class FileConnector extends AbstractMessageConnector implements FileConne
 	@Override
 	public synchronized void setAddress(String address) {
 		if (!address.equals(this.address)) {  // also checks for null
-			log.info("Setting address=" + address);
+			log.info("Setting address=" + LogUtil.hideCredentials(address));
 			this.address = address;
 			reconfigure();
 		}

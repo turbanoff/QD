@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.monitoring;
 
@@ -18,6 +21,7 @@ import com.devexperts.qd.DataScheme;
 import com.devexperts.qd.qtp.MessageConnector;
 import com.devexperts.qd.stats.QDStats;
 import com.devexperts.util.JMXNameBuilder;
+import com.devexperts.util.LogUtil;
 
 import static com.devexperts.qd.monitoring.IOCounter.*;
 
@@ -146,7 +150,7 @@ class IOCounters {
 		for (IOCounter io : counters.values()){
 			MessageConnector connector = io.getConnector();
 			// update addr
-			String addr = connector.getAddress();
+			String addr = LogUtil.hideCredentials(connector.getAddress());
 			if (displayAddr.isEmpty()) {
 				displayAddr = addr;
 				sameAddrCount = 1;

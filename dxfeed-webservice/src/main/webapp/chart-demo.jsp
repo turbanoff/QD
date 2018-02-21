@@ -1,17 +1,20 @@
+<%--
+  !++
+  QDS - Quick Data Signalling Library
+  !-
+  Copyright (C) 2002 - 2018 Devexperts LLC
+  !-
+  This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+  If a copy of the MPL was not distributed with this file, You can obtain one at
+  http://mozilla.org/MPL/2.0/.
+  !__
+  --%>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="com.dxfeed.event.EventType" %>
 <%@ page import="com.dxfeed.event.TimeSeriesEvent" %>
 <%@ page import="com.dxfeed.webservice.DXFeedContext" %>
 <%@ page import="com.dxfeed.webservice.DXFeedJson" %>
-<%--
-  ~ QDS - Quick Data Signalling Library
-  ~ Copyright (C) 2002-2016 Devexperts LLC
-  ~
-  ~ This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
-  ~ If a copy of the MPL was not distributed with this file, You can obtain one at
-  ~ http://mozilla.org/MPL/2.0/.
-  --%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -21,9 +24,8 @@
 	<!-- dxFeed API dependencies -->
 	<script src="js/jquery/jquery-1.9.0.js"></script>
 	<!-- The following scripts can be used from a merged minified JS file -->
-	<script src="js/cometd/org/cometd.js"></script>
-	<script src="js/cometd/jquery/jquery.cometd.js"></script>
-	<script src="js/dxfeed/dxfeed.context.js"></script>
+	<script src="js/cometd/cometd.js"></script>
+	<script src="js/jquery/jquery.cometd.js"></script>
 	<script src="js/dxfeed/dxfeed.cometd.js"></script>
 	<!-- flot -->
 	<script src="js/flot/jquery.flot.js"></script>

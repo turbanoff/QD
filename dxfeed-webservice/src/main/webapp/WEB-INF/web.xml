@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ QDS - Quick Data Signalling Library
-  ~ Copyright (C) 2002-2016 Devexperts LLC
-  ~
-  ~ This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
-  ~ If a copy of the MPL was not distributed with this file, You can obtain one at
-  ~ http://mozilla.org/MPL/2.0/.
+  !++
+  QDS - Quick Data Signalling Library
+  !-
+  Copyright (C) 2002 - 2018 Devexperts LLC
+  !-
+  This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+  If a copy of the MPL was not distributed with this file, You can obtain one at
+  http://mozilla.org/MPL/2.0/.
+  !__
   -->
 <web-app xmlns="http://java.sun.com/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -16,18 +19,14 @@
 		<welcome-file>index.jsp</welcome-file>
 	</welcome-file-list>
 	
-	<!-- The following JS files are mapped to JSP servlet, because they are using JSP to embed context path into them.
-	     They are precompiled by jspc-maven-plugin during build and the corresponding servlet-mapping
-	     is replaced by mapping of those precompiled servlets. -->
-
+	<!-- Context JS file is mapped to servlet to embed context path. 
+	     Uncomment the mapping below if no precompilation of JSPs is used. -->
+	<!--
 	<servlet-mapping>
 		<servlet-name>jsp</servlet-name>
 		<url-pattern>/js/dxfeed/dxfeed.context.js</url-pattern>
-		<url-pattern>/js/min/dxfeed.cometd.all.min.js</url-pattern>
-		<url-pattern>/js/min/dxfeed-ui.cometd.all.min.js</url-pattern>
 	</servlet-mapping>
-
-	<!-- end of jps -->
+	-->
 
 	<!-- rest servlet -->
 	<servlet>
@@ -43,7 +42,11 @@
 	<!-- cometd servlet -->
 	<servlet>
 		<servlet-name>cometd</servlet-name>
-		<servlet-class>org.cometd.annotation.AnnotationCometDServlet</servlet-class>
+		<servlet-class>com.dxfeed.webservice.comet.DXFeedCometDServlet</servlet-class>
+		<init-param>
+			<param-name>debugSessions</param-name>
+			<param-value>false</param-value>
+		</init-param>
 		<init-param>
 			<param-name>transports</param-name>
 			<param-value>org.cometd.websocket.server.WebSocketTransport</param-value>

@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.dxfeed.event;
 
@@ -105,7 +108,7 @@ public interface TimeSeriesEvent<T> extends IndexedEvent<T> {
 	 * Typically event index for a time series event includes
 	 * {@link #getTime() time} inside.
 	 *
-	 * <h5>Implementation notes</h5>
+	 * <h3>Implementation notes</h3>
 	 *
 	 * The most common scheme for event indices is to set highest 32 bits of event index
 	 * to event timestamp in seconds. The lowest 32 bits are then split as follows.

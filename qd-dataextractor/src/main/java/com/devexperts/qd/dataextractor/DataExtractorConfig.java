@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.dataextractor;
 
@@ -17,6 +20,7 @@ import javax.naming.NamingException;
 import com.devexperts.logging.Logging;
 import com.devexperts.qd.qtp.MessageType;
 import com.devexperts.util.InvalidFormatException;
+import com.devexperts.util.LogUtil;
 
 public class DataExtractorConfig {
 	private static final Logging log = Logging.getLogging(DataExtractorConfig.class);
@@ -51,7 +55,7 @@ public class DataExtractorConfig {
 			if (configFilePath == null)
 				configFilePath = System.getProperty(DATA_PROPERTIES);
 			if (configFilePath != null) {
-				log.info("Loading config file from " + configFilePath);
+				log.info("Loading config file from " + LogUtil.hideCredentials(configFilePath));
 				InputStream in = new FileInputStream(configFilePath);
 				try {
 					props.load(in);

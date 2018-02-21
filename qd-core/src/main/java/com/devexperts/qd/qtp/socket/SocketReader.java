@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.qtp.socket;
 
@@ -54,7 +57,8 @@ class SocketReader extends QTPWorkerThread {
 				if (isClosed())
 					return; // bail out if closed
 				Chunk chunk = handler.chunkPool.getChunk(this);
-				int bytesRead = in.read(chunk.getBytes(), chunk.getOffset(), chunk.getLength());
+				int readCapacity = chunk.getLength();
+				int bytesRead = in.read(chunk.getBytes(), chunk.getOffset(), readCapacity);
 				timeNanos = System.nanoTime();
 				if (handler.verbose && log.debugEnabled())
 					log.debug(SocketHandler.verboseBytesToString("Read", chunk.getBytes(), chunk.getOffset(), bytesRead));
@@ -64,7 +68,7 @@ class SocketReader extends QTPWorkerThread {
 				chunk.setLength(bytesRead, this);
 				chunks.add(chunk, this);
 				totalRead += bytesRead;
-				if (totalRead >= QTPConstants.READ_AGGREGATION_SIZE || bytesRead < chunk.getLength() || in.available() == 0)
+				if (totalRead >= QTPConstants.READ_AGGREGATION_SIZE || bytesRead < readCapacity || in.available() == 0)
 					break; // either we've reached aggregation limit or the portion of data have been (most likely) read completely; we'll pass it for processing
 				if (handler.verbose && log.debugEnabled())
 					log.debug("More data is available, will read");
@@ -72,7 +76,13 @@ class SocketReader extends QTPWorkerThread {
 			if (isClosed())
 				return; // bail out if closed
 
-			isReadyToProcess = threadData.connection.processChunks(chunks, this);
+			// Note that isReadyToProcess can be set to true concurrently via listener.
+			// We do not want to override the result of this notification, thus we first set it to false
+			// and then as we call processChunks() we could only raise it to true.
+			isReadyToProcess = false;
+			//noinspection RedundantIfStatement
+			if (threadData.connection.processChunks(chunks, this))
+				isReadyToProcess = true;
 			long deltaTimeNanos = System.nanoTime() - timeNanos;
 			if (deltaTimeNanos > WARN_TIMEOUT_NANOS)
 				log.warn("processChunks took " + deltaTimeNanos + " ns");

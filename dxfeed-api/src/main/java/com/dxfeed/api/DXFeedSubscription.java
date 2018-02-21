@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.dxfeed.api;
 
@@ -346,7 +349,7 @@ public class DXFeedSubscription<E> implements Serializable, ObservableSubscripti
 	 * All registered event listeners will receive update on the last events for all
 	 * newly added symbols.
 	 *
-	 * <h5>Implementation notes</h5>
+	 * <h3>Implementation notes</h3>
 	 * 
 	 * This method notifies
 	 * all installed {@link ObservableSubscriptionChangeListener} instances of any resulting changes in the set of
@@ -371,7 +374,7 @@ public class DXFeedSubscription<E> implements Serializable, ObservableSubscripti
 	 * All registered event listeners will receive update on the last events for all
 	 * newly added symbols.
 	 *
-	 * <h5>Implementation notes</h5>
+	 * <h3>Implementation notes</h3>
 	 *
 	 * This method notifies
 	 * all installed {@link ObservableSubscriptionChangeListener} instances of any resulting changes in the set of
@@ -394,7 +397,7 @@ public class DXFeedSubscription<E> implements Serializable, ObservableSubscripti
 	 * All registered event listeners will receive update on the last events for all
 	 * newly added symbols.
 	 *
-	 * <h5>Implementation notes</h5>
+	 * <h3>Implementation notes</h3>
 	 *
 	 * This method notifies
 	 * all installed {@link ObservableSubscriptionChangeListener} instances of any resulting changes in the set of
@@ -421,7 +424,7 @@ public class DXFeedSubscription<E> implements Serializable, ObservableSubscripti
 	 * All registered event listeners will receive update on the last events for all
 	 * newly added symbols.
 	 *
-	 * <h5>Implementation notes</h5>
+	 * <h3>Implementation notes</h3>
 	 *
 	 * This method notifies
 	 * all installed {@link ObservableSubscriptionChangeListener} instances of any resulting changes in the set of
@@ -452,7 +455,7 @@ public class DXFeedSubscription<E> implements Serializable, ObservableSubscripti
 	 * All registered event listeners will receive update on the last events for all
 	 * newly added symbols.
 	 *
-	 * <h5>Implementation notes</h5>
+	 * <h3>Implementation notes</h3>
 	 *
 	 * This method notifies
 	 * all installed {@link ObservableSubscriptionChangeListener} instances of any resulting changes in the set of
@@ -473,7 +476,7 @@ public class DXFeedSubscription<E> implements Serializable, ObservableSubscripti
 	 * To conveniently remove one or few symbols you can use
 	 * {@link #removeSymbols(Object...) removeSymbols(Object... symbols)} method.
 	 *
-	 * <h5>Implementation notes</h5>
+	 * <h3>Implementation notes</h3>
 	 *
 	 * This method notifies
 	 * all installed {@link ObservableSubscriptionChangeListener} instances of any resulting changes in the set of
@@ -498,7 +501,7 @@ public class DXFeedSubscription<E> implements Serializable, ObservableSubscripti
 	 * symbols at once it is preferable to use
 	 * {@link #removeSymbols(Collection) removeSymbols(Collection&lt;?&gt; symbols)} method.
 	 *
-	 * <h5>Implementation notes</h5>
+	 * <h3>Implementation notes</h3>
 	 *
 	 * This method notifies
 	 * all installed {@link ObservableSubscriptionChangeListener} instances of any resulting changes in the set of
@@ -754,10 +757,8 @@ public class DXFeedSubscription<E> implements Serializable, ObservableSubscripti
 	}
 
 	private void addAndNotify(IndexedSet<Object, Object> added, IndexedSet<Object, Object> removed) {
-		for (Iterator<Object> it = added.iterator(); it.hasNext(); ) {
-			if (!putSymbol(it.next()))
-				it.remove(); // was there and "the same" -- don't process it
-		}
+		// was there and "the same" -- don't process it
+		added.removeIf(o -> !putSymbol(o));
 		if (added.isEmpty() && (removed == null || removed.isEmpty()))
 			return;
 		if (changeListeners != null) {
@@ -864,7 +865,7 @@ public class DXFeedSubscription<E> implements Serializable, ObservableSubscripti
 		@Override
 		Set<Class<? extends E>> asSet() {
 			if (set == null)
-				set = Collections.<Class<? extends E>>singleton(eventType);
+				set = Collections.singleton(eventType);
 			return set;
 		}
 	}

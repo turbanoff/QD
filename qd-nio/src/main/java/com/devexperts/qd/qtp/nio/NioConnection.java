@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.qtp.nio;
 
@@ -25,6 +28,7 @@ import com.devexperts.qd.qtp.socket.SocketUtil;
 import com.devexperts.qd.stats.QDStats;
 import com.devexperts.transport.stats.ConnectionStats;
 import com.devexperts.util.JMXNameBuilder;
+import com.devexperts.util.LogUtil;
 
 import static com.devexperts.qd.qtp.nio.NioFlags.*;
 
@@ -105,10 +109,10 @@ class NioConnection extends AbstractTransportConnection {
 		String address = SocketUtil.getAcceptedSocketAddress(channel.socket());
 		try {
 			channel.close();
-			log.info("Disconnected from " + address +
+			log.info("Disconnected from " + LogUtil.hideCredentials(address) +
 				(reason == null ? "" : reason.getMessage() == null ? "" : " because of " + reason.getMessage()));
 		} catch (Throwable t) {
-			log.error("Error occurred while disconnecting from " + address, t);
+			log.error("Error occurred while disconnecting from " + LogUtil.hideCredentials(address), t);
 		}
 	}
 

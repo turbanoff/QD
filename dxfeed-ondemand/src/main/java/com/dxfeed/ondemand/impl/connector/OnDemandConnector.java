@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.dxfeed.ondemand.impl.connector;
 
@@ -17,8 +20,7 @@ import com.devexperts.connector.proto.ApplicationConnectionFactory;
 import com.devexperts.qd.qtp.*;
 import com.devexperts.qd.qtp.help.MessageConnectorProperty;
 import com.devexperts.qd.qtp.help.MessageConnectorSummary;
-import com.devexperts.util.TimeFormat;
-import com.devexperts.util.TimePeriod;
+import com.devexperts.util.*;
 import com.dxfeed.api.impl.OnDemandConnectorMarker;
 import com.dxfeed.ondemand.impl.MarketDataReplay;
 import com.dxfeed.ondemand.impl.MarketDataToken;
@@ -56,7 +58,7 @@ public class OnDemandConnector extends AbstractMessageConnector
 			return; // already active
 		if (time == null)
 			return; // will not start until time is set
-		log.info("Starting OnDemandConnector to " + getAddress() + " at " + TimeFormat.DEFAULT.format(time));
+		log.info("Starting OnDemandConnector to " + LogUtil.hideCredentials(getAddress()) + " at " + TimeFormat.DEFAULT.format(time));
 		reconnectHelper.setReconnectDelay(getReconnectDelay()); // update reconnect delay
 		handler = new ReplayConnectionHandler(this);
 		handler.start();

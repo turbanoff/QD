@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.dxfeed.event.market.impl;
 
@@ -25,6 +28,8 @@ public class TimeAndSaleMapping extends MarketEventMapping {
 	private final int iAskPrice;
 	private final int iSaleConditions;
 	private final int iFlags;
+	private final int oBuyer;
+	private final int oSeller;
 
 	public TimeAndSaleMapping(DataRecord record) {
 		super(record);
@@ -38,6 +43,8 @@ public class TimeAndSaleMapping extends MarketEventMapping {
 		iAskPrice = MappingUtil.findIntField(record, "Ask.Price", true);
 		iSaleConditions = MappingUtil.findIntField(record, "ExchangeSaleConditions", true);
 		iFlags = MappingUtil.findIntField(record, "Flags", true);
+		oBuyer = MappingUtil.findObjField(record, "Buyer", false);
+		oSeller = MappingUtil.findObjField(record, "Seller", false);
 		putNonDefaultPropertyName("Exchange", "ExchangeCode");
 		putNonDefaultPropertyName("ExchangeSaleConditions", "SaleConditions");
 	}
@@ -120,6 +127,22 @@ public class TimeAndSaleMapping extends MarketEventMapping {
 		setInt(cursor, iSize, size);
 	}
 
+	public double getSizeDouble(RecordCursor cursor) {
+		return getInt(cursor, iSize);
+	}
+
+	public void setSizeDouble(RecordCursor cursor, double size) {
+		setInt(cursor, iSize, (int)size);
+	}
+
+	public int getSizeDecimal(RecordCursor cursor) {
+		return Decimal.composeDecimal(getInt(cursor, iSize), 0);
+	}
+
+	public void setSizeDecimal(RecordCursor cursor, int size) {
+		setInt(cursor, iSize, (int)Decimal.toDouble(size));
+	}
+
 	public double getBidPrice(RecordCursor cursor) {
 		return Decimal.toDouble(getInt(cursor, iBidPrice));
 	}
@@ -194,6 +217,30 @@ public class TimeAndSaleMapping extends MarketEventMapping {
 
 	public void setFlags(RecordCursor cursor, int flags) {
 		setInt(cursor, iFlags, flags);
+	}
+
+	public String getBuyer(RecordCursor cursor) {
+		if (oBuyer < 0)
+			return null;
+		return (String)getObj(cursor, oBuyer);
+	}
+
+	public void setBuyer(RecordCursor cursor, String buyer) {
+		if (oBuyer < 0)
+			return;
+		setObj(cursor, oBuyer, buyer);
+	}
+
+	public String getSeller(RecordCursor cursor) {
+		if (oSeller < 0)
+			return null;
+		return (String)getObj(cursor, oSeller);
+	}
+
+	public void setSeller(RecordCursor cursor, String seller) {
+		if (oSeller < 0)
+			return;
+		setObj(cursor, oSeller, seller);
 	}
 // END: CODE AUTOMATICALLY GENERATED
 }

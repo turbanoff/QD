@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.tools;
 
@@ -18,6 +21,7 @@ import com.devexperts.io.URLInputStream;
 import com.devexperts.mars.common.MARSEndpoint;
 import com.devexperts.qd.QDLog;
 import com.devexperts.services.ServiceProvider;
+import com.devexperts.util.LogUtil;
 import com.dxfeed.ipf.*;
 import com.dxfeed.ipf.live.InstrumentProfileCollector;
 import com.dxfeed.ipf.live.InstrumentProfileConnection;
@@ -229,10 +233,10 @@ public class Instruments extends AbstractTool {
 			long time = System.currentTimeMillis();
 			List<InstrumentProfile> readProfiles = reader.readFromFile(source);
 			profiles.addAll(readProfiles);
-			QDLog.log.info("Read " + readProfiles.size() + " profiles from " + source + " in " + (System.currentTimeMillis() - time) / 100 / 10.0 + "s");
+			QDLog.log.info("Read " + readProfiles.size() + " profiles from " + LogUtil.hideCredentials(source) + " in " + (System.currentTimeMillis() - time) / 100 / 10.0 + "s");
 			return profiles;
 		} catch (IOException e) {
-			QDLog.log.error("Error reading source " + source, e);
+			QDLog.log.error("Error reading source " + LogUtil.hideCredentials(source), e);
 			throw new IllegalArgumentException(e);
 		}
 	}
@@ -399,12 +403,12 @@ public class Instruments extends AbstractTool {
 		for (InstrumentProfile ip : read(new ArrayList<>(), source))
 			symbols.add(ip.getSymbol());
 		long time = System.currentTimeMillis();
-		int size = profiles.size();
-		for (Iterator<InstrumentProfile> it = profiles.iterator(); it.hasNext();)
-			if (symbols.contains(it.next().getSymbol()))
-				it.remove();
-		QDLog.log.info("Excluded " + (size - profiles.size()) + " profiles in " + (System.currentTimeMillis() - time) / 100 / 10.0 + "s");
-		return profiles;
+		List<InstrumentProfile> filtered = new ArrayList<>();
+		for (InstrumentProfile ip : profiles)
+			if (!symbols.contains(ip.getSymbol()))
+				filtered.add(ip);
+		QDLog.log.info("Excluded " + (profiles.size() - filtered.size()) + " profiles in " + (System.currentTimeMillis() - time) / 100 / 10.0 + "s");
+		return filtered;
 	}
 
 	private List<InstrumentProfile> check(List<InstrumentProfile> profiles) {
@@ -449,10 +453,11 @@ public class Instruments extends AbstractTool {
 			long time = System.currentTimeMillis();
 			if (!profiles.isEmpty())
 				new InstrumentProfileWriter().writeToFile(file, profiles);
-			QDLog.log.info("Wrote " + profiles.size() + " profiles to " + file + " in " + (System.currentTimeMillis() - time) / 100 / 10.0 + "s");
+			QDLog.log.info("Wrote " + profiles.size() + " profiles to " + LogUtil.hideCredentials(file) +
+				" in " + (System.currentTimeMillis() - time) / 100 / 10.0 + "s");
 			return profiles;
 		} catch (IOException e) {
-			QDLog.log.error("Error writing file " + file, e);
+			QDLog.log.error("Error writing file " + LogUtil.hideCredentials(file), e);
 			throw new IllegalArgumentException(e);
 		}
 	}

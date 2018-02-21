@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.tools;
 
@@ -15,6 +18,7 @@ import com.devexperts.logging.Logging;
 import com.devexperts.qd.QDLog;
 import com.devexperts.qd.qtp.*;
 import com.devexperts.services.ServiceProvider;
+import com.devexperts.util.LogUtil;
 
 /**
  * Feed tool.
@@ -81,13 +85,13 @@ public class Feed extends AbstractTool {
 		String feed_address = args[0];
 		String agent_address = args[1];
 
-		log.info("Using feed address " + MessageConnectors.maskAuthorizationData(feed_address));
+		log.info("Using feed address " + LogUtil.hideCredentials(feed_address));
 		connectors.addAll(
 			MessageConnectors.createMessageConnectors(
 				new FeedAdapter.Factory(endpoint, null, raw.isSet(), subscribe.isSet(), delayer),
 				feed_address, endpoint.getRootStats()));
 
-		log.info("Using agent address " + MessageConnectors.maskAuthorizationData(agent_address));
+		log.info("Using agent address " + LogUtil.hideCredentials(agent_address));
 		connectors.addAll(
 			MessageConnectors.createMessageConnectors(
 				new AgentAdapter.Factory(endpoint, null),

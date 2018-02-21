@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.dxfeed.event.market;
 
@@ -44,11 +47,13 @@ public final class TimeAndSaleDelegate extends MarketEventDelegateImpl<TimeAndSa
 		event.setTimeNanoPart(m.getTimeNanoPart(cursor));
 		event.setExchangeCode(m.getExchangeCode(cursor));
 		event.setPrice(m.getPrice(cursor));
-		event.setSize(m.getSize(cursor));
+		event.setSizeAsDouble(m.getSizeDouble(cursor));
 		event.setBidPrice(m.getBidPrice(cursor));
 		event.setAskPrice(m.getAskPrice(cursor));
 		event.setExchangeSaleConditions(m.getSaleConditionsString(cursor));
 		event.setFlags(m.getFlags(cursor));
+		event.setBuyer(m.getBuyer(cursor));
+		event.setSeller(m.getSeller(cursor));
 		return event;
 	}
 
@@ -61,11 +66,13 @@ public final class TimeAndSaleDelegate extends MarketEventDelegateImpl<TimeAndSa
 		m.setTimeNanoPart(cursor, event.getTimeNanoPart());
 		m.setExchangeCode(cursor, event.getExchangeCode());
 		m.setPrice(cursor, event.getPrice());
-		m.setSize(cursor, (int)event.getSize());
+		m.setSizeDouble(cursor, event.getSizeAsDouble());
 		m.setBidPrice(cursor, event.getBidPrice());
 		m.setAskPrice(cursor, event.getAskPrice());
 		m.setSaleConditionsString(cursor, event.getExchangeSaleConditions());
 		m.setFlags(cursor, event.getFlags());
+		m.setBuyer(cursor, event.getBuyer());
+		m.setSeller(cursor, event.getSeller());
 		return cursor;
 	}
 // END: CODE AUTOMATICALLY GENERATED

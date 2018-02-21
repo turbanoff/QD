@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.dxfeed.event.candle;
 
@@ -49,9 +52,12 @@ import com.dxfeed.model.TimeSeriesEventModel;
  * <li>{@link #getLow() low} - the minimal (low) price of this candle;
  * <li>{@link #getClose() close} - the last (close) price of this candle;
  * <li>{@link #getVolume() volume} - total volume in this candle;
+ * <li>{@link #getVolumeAsDouble() volumeAsDouble} - total volume in this candle as floating number with fractions;
  * <li>{@link #getVWAP() vwap} - volume-weighted average price (VWAP) in this candle;
  * <li>{@link #getBidVolume() bidVolume} - bid volume in this candle;
+ * <li>{@link #getBidVolumeAsDouble() bidVolumeAsDouble} - bid volume in this candle as floating number with fractions;
  * <li>{@link #getAskVolume() askVolume} - bid volume in this candle.
+ * <li>{@link #getAskVolumeAsDouble() askVolumeAsDouble} - bid volume in this candle as floating number with fractions.
  * </ul>
  *
  * <h3><a name="eventFlagsSection">Event flags, transactions and snapshots</a></h3>
@@ -82,7 +88,7 @@ import com.dxfeed.model.TimeSeriesEventModel;
  */
 @XmlRootElement(name = "Candle")
 public class Candle implements TimeSeriesEvent<CandleSymbol>, LastingEvent<CandleSymbol> {
-	private static final long serialVersionUID = 2;
+	private static final long serialVersionUID = 3;
 
 	// ========================= public static =========================
 
@@ -112,10 +118,10 @@ public class Candle implements TimeSeriesEvent<CandleSymbol>, LastingEvent<Candl
 	private double high = Double.NaN;
 	private double low = Double.NaN;
 	private double close = Double.NaN;
-	private long volume;
+	private double volume = Double.NaN;
 	private double vwap = Double.NaN;
-	private long bidVolume;
-	private long askVolume;
+	private double bidVolume = Double.NaN;
+	private double askVolume = Double.NaN;
 
 	/**
 	 * Creates new candle with default values.
@@ -351,8 +357,9 @@ public class Candle implements TimeSeriesEvent<CandleSymbol>, LastingEvent<Candl
 	 * Returns total volume in this candle.
 	 * @return total volume in this candle.
 	 */
+	@XmlTransient
 	public long getVolume() {
-		return volume;
+		return (long)volume;
 	}
 
 	/**
@@ -360,6 +367,23 @@ public class Candle implements TimeSeriesEvent<CandleSymbol>, LastingEvent<Candl
 	 * @param volume total volume in this candle.
 	 */
 	public void setVolume(long volume) {
+		this.volume = volume;
+	}
+
+	/**
+	 * Returns total volume in this candle as floating number with fractions.
+	 * @return total volume in this candle as floating number with fractions.
+	 */
+	@XmlElement(name = "volume")
+	public double getVolumeAsDouble() {
+		return volume;
+	}
+
+	/**
+	 * Changes total volume in this candle as floating number with fractions.
+	 * @param volume total volume in this candle as floating number with fractions.
+	 */
+	public void setVolumeAsDouble(double volume) {
 		this.volume = volume;
 	}
 
@@ -385,8 +409,9 @@ public class Candle implements TimeSeriesEvent<CandleSymbol>, LastingEvent<Candl
 	 * Returns bid volume in this candle.
 	 * @return bid volume in this candle.
 	 */
+	@XmlTransient
 	public long getBidVolume() {
-		return bidVolume;
+		return (long)bidVolume;
 	}
 
 	/**
@@ -398,11 +423,29 @@ public class Candle implements TimeSeriesEvent<CandleSymbol>, LastingEvent<Candl
 	}
 
 	/**
+	 * Returns bid volume in this candle as floating number with fractions.
+	 * @return bid volume in this candle as floating number with fractions.
+	 */
+	@XmlElement(name = "bidVolume")
+	public double getBidVolumeAsDouble() {
+		return bidVolume;
+	}
+
+	/**
+	 * Changes bid volume in this candle as floating number with fractions.
+	 * @param bidVolume bid volume in this candle as floating number with fractions.
+	 */
+	public void setBidVolumeAsDouble(double bidVolume) {
+		this.bidVolume = bidVolume;
+	}
+
+	/**
 	 * Returns ask volume in this candle.
 	 * @return ask volume in this candle.
 	 */
+	@XmlTransient
 	public long getAskVolume() {
-		return askVolume;
+		return (long)askVolume;
 	}
 
 	/**
@@ -410,6 +453,23 @@ public class Candle implements TimeSeriesEvent<CandleSymbol>, LastingEvent<Candl
 	 * @param askVolume ask volume in this candle.
 	 */
 	public void setAskVolume(long askVolume) {
+		this.askVolume = askVolume;
+	}
+
+	/**
+	 * Returns ask volume in this candle as floating number with fractions.
+	 * @return ask volume in this candle as floating number with fractions.
+	 */
+	@XmlElement(name = "askVolume")
+	public double getAskVolumeAsDouble() {
+		return askVolume;
+	}
+
+	/**
+	 * Changes ask volume in this candle as floating number with fractions.
+	 * @param askVolume ask volume in this candle as floating number with fractions.
+	 */
+	public void setAskVolumeAsDouble(double askVolume) {
 		this.askVolume = askVolume;
 	}
 

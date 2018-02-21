@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.logging;
 
@@ -35,14 +38,15 @@ public class Logging {
 	private static final int FINEST_INT = Level.FINEST.intValue();
 	private static final int FINE_INT = Level.FINE.intValue();
 
+	public static final String LOG_CLASS_NAME = "log.className";
 	public static final String LOG_FILE_PROPERTY = "log.file";
 	public static final String ERR_FILE_PROPERTY = "err.file";
 	public static final String LOG_MAX_FILE_SIZE_PROPERTY = "log.maxFileSize";
 	public static final String ERR_MAX_FILE_SIZE_PROPERTY = "err.maxFileSize";
 	public static final String DEFAULT_MAX_FILE_SIZE = "900M";
 
-	private static final ConcurrentMap<String, Logging> INSTANCES = new ConcurrentHashMap<String, Logging>();
-	private static final DefaultLogging IMPL = configure();
+	private static final ConcurrentMap<String, Logging> INSTANCES = new ConcurrentHashMap<>();
+	private static final DefaultLogging IMPL = configure(DefaultLogging.getProperty(LOG_CLASS_NAME, ""));
 
 	public static Logging getLogging(Class<?> clazz) {
 		return getLogging(clazz.getName());
@@ -91,7 +95,7 @@ public class Logging {
 	/**
 	 * Changes default {@link #debugEnabled()} behaviour for this logging instance.
 	 * Use this method to turn off debugging information for classes that do not
-	 * need to print their debugging information in production environment. 
+	 * need to print their debugging information in production environment.
 	 */
 	public final void configureDebugEnabled(boolean defaultDebugEnabled) {
 		IMPL.setDebugEnabled(peer, Boolean.valueOf(DefaultLogging.getProperty(getName() + ".debug",
@@ -170,24 +174,56 @@ public class Logging {
 	}
 
 	/**
-	 * First tries to use log4j logging. If this attempt fails, it uses {@link java.util.logging} logging.
+	 * At first tries to use logging from passed class name. If this attempt fails, tries to use log4j logging.
+	 * If this attempt fails, it uses log4j2 logging. If this attempt fails, it uses {@link java.util.logging} logging.
 	 *
 	 * @return Logging implementation
 	 */
-	private static DefaultLogging configure() {
-		DefaultLogging impl;
-		Map<String, Exception> errors = new LinkedHashMap<String, Exception>();
-		try {
-			impl = (DefaultLogging)Class.forName("com.devexperts.logging.Log4jLogging").newInstance();
-			errors.putAll(impl.configure());
-		} catch (Throwable t) {
-			// failed to configure log4j -- use default logging
+	private static DefaultLogging configure(String className) {
+		DefaultLogging impl = null;
+		Map<String, Exception> errors = new LinkedHashMap<>();
+		if (!className.isEmpty()) {
+			try {
+				impl = (DefaultLogging)Class.forName(className).newInstance();
+				errors.putAll(impl.configure());
+			} catch (Throwable t) {
+				// failed to configure with passed class name
+				impl = null;
+				if (!(t instanceof LinkageError) && !(t.getCause() instanceof LinkageError)) {
+					errors.put(className + " link", new IllegalStateException(t));
+				}
+			}
+		}
+		if (impl == null) {
+			try {
+				impl = (DefaultLogging)Class.forName("com.devexperts.logging.Log4jLogging").newInstance();
+				errors.putAll(impl.configure());
+			} catch (Throwable t) {
+				// failed to configure log4j
+				impl = null;
+				// LinkageError means that log4j is not found at all, otherwise it was found but our config is wrong
+				if (!(t instanceof LinkageError) && !(t.getCause() instanceof LinkageError)) {
+					errors.put("log4j link", new IllegalStateException(t));
+				}
+			}
+		}
+		if (impl == null) {
+			try {
+				impl = (DefaultLogging)Class.forName("com.devexperts.logging.Log4j2Logging").newInstance();
+				errors.putAll(impl.configure());
+			} catch (Throwable t) {
+				// failed to configure log4j2
+				impl = null;
+				if (!(t instanceof LinkageError) && !(t.getCause() instanceof LinkageError)) {
+					errors.put("log4j2 link", new IllegalStateException(t));
+				}
+			}
+		}
+		if (impl == null) {
 			impl = new DefaultLogging();
 			errors.putAll(impl.configure());
-			// LinkageError means that log4j is not found at all, otherwise it was found but our config is wrong
-			if (!(t instanceof LinkageError) && !(t.getCause() instanceof LinkageError))
-				impl.log(impl.getPeer("config"), Level.SEVERE, "Failed to configure log4j", t);
 		}
+
 		reportErrors(impl, errors);
 		return impl;
 	}

@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.kit;
 
@@ -38,7 +41,10 @@ public class NotFilter extends QDFilter implements QDFilter.UpdateListener {
 
 	@Override
 	public boolean accept(QDContract contract, DataRecord record, int cipher, String symbol) {
-		if (cipher == record.getScheme().getCodec().getWildcardCipher())
+		DataScheme scheme = getScheme();
+		if (scheme == null)
+			scheme = record.getScheme(); // for backwards compatibility
+		if (cipher == scheme.getCodec().getWildcardCipher())
 			return true;
 		return !delegate.accept(contract, record, cipher, symbol);
 	}

@@ -1,25 +1,33 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.qtp.socket;
 
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 
+import com.devexperts.connector.codec.CodecConnectionFactory;
+import com.devexperts.connector.codec.CodecFactory;
 import com.devexperts.connector.proto.ApplicationConnectionFactory;
 import com.devexperts.qd.QDFactory;
+import com.devexperts.qd.QDLog;
 import com.devexperts.qd.qtp.*;
 import com.devexperts.qd.qtp.help.MessageConnectorProperty;
 import com.devexperts.qd.qtp.help.MessageConnectorSummary;
 import com.devexperts.qd.stats.QDStats;
 import com.devexperts.qd.util.QDConfig;
+import com.devexperts.services.Services;
 import com.devexperts.transport.stats.ConnectionStats;
 import com.devexperts.transport.stats.EndpointStats;
+import com.devexperts.util.LogUtil;
 import com.devexperts.util.SystemProperties;
 
 /**
@@ -46,7 +54,7 @@ public class ClientSocketConnector extends AbstractMessageConnector
 	/**
 	 * Creates new client socket connector.
 	 *
-	 * @deprecated use {@link #ClientSocketConnector(com.devexperts.connector.proto.ApplicationConnectionFactory, String, int)}
+	 * @deprecated use {@link #ClientSocketConnector(ApplicationConnectionFactory, String, int)}
 	 * @param factory message adapter factory to use
 	 * @param host host to connect to
 	 * @param port TCP port to connect to
@@ -93,7 +101,7 @@ public class ClientSocketConnector extends AbstractMessageConnector
 	@Override
 	public synchronized void setHost(String host) {
 		if (!host.equals(this.host)) { // also checks for null
-			log.info("Setting host=" + host);
+			log.info("Setting host=" + LogUtil.hideCredentials(host));
 			this.host = host;
 			reconfigure();
 		}
@@ -126,7 +134,7 @@ public class ClientSocketConnector extends AbstractMessageConnector
 	@MessageConnectorProperty("HTTP proxy host name")
 	public synchronized void setProxyHost(String proxyHost) {
 		if (!proxyHost.equals(this.proxyHost)) { // also checks for null
-			log.info("Setting proxyHost=" + proxyHost);
+			log.info("Setting proxyHost=" + LogUtil.hideCredentials(proxyHost));
 			this.proxyHost = proxyHost;
 			reconfigure();
 		}
@@ -147,19 +155,42 @@ public class ClientSocketConnector extends AbstractMessageConnector
 		}
 	}
 
+	@Deprecated
 	public boolean getTls() {
 		return useTls;
 	}
 
-	@MessageConnectorProperty("Use SSLSocketFactory")
+	@MessageConnectorProperty(
+		value = "Use SSLConnectionFactory",
+		deprecated = "Use tls or ssl codec in address string. For example tls+<address>"
+	)
+	@Deprecated
 	public synchronized void setTls(boolean useTls) {
 		if (this.useTls != useTls) {
-			log.info("Setting useTls=" + useTls);
+			if (useTls) {
+				CodecFactory sslCodecFactory = Services.createService(CodecFactory.class, null, "com.devexperts.connector.codec.ssl.SSLCodecFactory");
+				if (sslCodecFactory == null) {
+					log.error("SSLCodecFactory is not found. Using the SSL protocol is not supported");
+					return;
+				}
+				setFactory(sslCodecFactory.createCodec("ssl", getFactory()));
+			} else {
+				CodecConnectionFactory sslFactory = (CodecConnectionFactory)getFactory();
+				if (!sslFactory.getClass().getSimpleName().contains("SSLCodecFactory")) {
+					log.error("SSLCodecFactory not found. SSL protocol is not used");
+					return;
+				}
+				setFactory(sslFactory.getDelegate());
+			}
 			this.useTls = useTls;
+			log.info("Setting useTls=" + useTls);
 			reconfigure();
 		}
+		QDLog.log.warn("WARNING: DEPRECATED use \"setTls()\" method from program or \"tls\" property from address string. " +
+			"Use tls or ssl codec in address string. For example tls+<address>");
 	}
 
+	@Deprecated
 	public TrustManager getTrustManager() {
 		return trustManager;
 	}
@@ -170,10 +201,15 @@ public class ClientSocketConnector extends AbstractMessageConnector
 	 *
 	 * @param trustManager trust manager to use instead of the default one, or {@code null} in order to use default one.
 	 */
+	@Deprecated
 	public void setTrustManager(TrustManager trustManager) {
-		if (this.trustManager != trustManager) {
-			log.info("Setting trustManager=" + trustManager);
-			this.trustManager = trustManager;
+		QDLog.log.warn("WARNING: DEPRECATED use \"setTrustManager()\" method on ClientSocketConnector. " +
+			"Use this method on SSL codec or in address string. For example tls+<address>");
+		ApplicationConnectionFactory factory = getFactory();
+		if (factory instanceof CodecConnectionFactory) {
+			factory = factory.clone();
+			((CodecConnectionFactory)factory).setTrustManager(trustManager);
+			setFactory(factory);
 			reconfigure();
 		}
 	}
@@ -224,7 +260,7 @@ public class ClientSocketConnector extends AbstractMessageConnector
 	public synchronized void start() {
 		if (handler != null)
 			return;
-		log.info("Starting ClientSocketConnector to " + getAddress());
+		log.info("Starting ClientSocketConnector to " + LogUtil.hideCredentials(getAddress()));
 		// create default stats instance if specific one was not provided.
 		if (getStats() == null)
 			setStats(QDFactory.getDefaultFactory().createStats(QDStats.SType.CLIENT_SOCKET_CONNECTOR, null));

@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.qd.qtp.http;
 
@@ -18,6 +21,7 @@ import com.devexperts.qd.stats.QDStats;
 import com.devexperts.qd.util.QDConfig;
 import com.devexperts.services.Services;
 import com.devexperts.transport.stats.EndpointStats;
+import com.devexperts.util.LogUtil;
 import com.devexperts.util.SystemProperties;
 
 @MessageConnectorSummary(
@@ -96,7 +100,7 @@ public class HttpConnector extends AbstractMessageConnector
 	@Override
 	public synchronized void setAddress(String address) {
 		if (!address.equals(this.address)) {  // also checks for null
-			log.info("Setting address=" + address);
+			log.info("Setting address=" + LogUtil.hideCredentials(address));
 			this.address = address;
 			reconfigure();
 		}
@@ -186,7 +190,7 @@ public class HttpConnector extends AbstractMessageConnector
 	@MessageConnectorProperty("Assume plain file on this URL instead of QDS servlet")
 	public synchronized void setFile(boolean file) {
 		if (this.file != file) {
-			log.info("Setting file=" + file);
+			log.info("Setting file=" + LogUtil.hideCredentials(file));
 			this.file = file;
 			reconfigure();
 		}
@@ -196,7 +200,7 @@ public class HttpConnector extends AbstractMessageConnector
 	public synchronized void start() {
 		if (handler != null)
 			return;
-		log.info("Starting HttpConnector to " + getAddress());
+		log.info("Starting HttpConnector to " + LogUtil.hideCredentials(getAddress()));
 		// create default stats instance if specific one was not provided.
 		if (getStats() == null)
 			setStats(QDFactory.getDefaultFactory().createStats(QDStats.SType.HTTP_CONNECTOR, null));

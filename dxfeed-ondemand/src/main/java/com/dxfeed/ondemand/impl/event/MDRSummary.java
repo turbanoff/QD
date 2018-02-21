@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.dxfeed.ondemand.impl.event;
 
@@ -22,7 +25,7 @@ public class MDRSummary extends MDREvent {
 	private int highPrice;
 	private int lowPrice;
 	private int openPrice;
-	private int closePrice;
+	private int closePrice; // this is a prevDayClosePrice actually
 	private int openInterest;
 
 	@Override
@@ -74,7 +77,7 @@ public class MDRSummary extends MDREvent {
 		mapping.setDayHighPriceDecimal(cursor, highPrice);
 		mapping.setDayLowPriceDecimal(cursor, lowPrice);
 		mapping.setDayOpenPriceDecimal(cursor, openPrice);
-		mapping.setDayClosePriceDecimal(cursor, closePrice);
+		mapping.setPrevDayClosePriceDecimal(cursor, closePrice);
 		mapping.setOpenInterest(cursor, openInterest);
 	}
 
@@ -101,7 +104,7 @@ public class MDRSummary extends MDREvent {
 		highPrice = mapping.getDayHighPriceDecimal(cursor);
 		lowPrice = mapping.getDayLowPriceDecimal(cursor);
 		openPrice = mapping.getDayOpenPriceDecimal(cursor);
-		closePrice = mapping.getDayClosePriceDecimal(cursor);
+		closePrice = mapping.getPrevDayClosePriceDecimal(cursor);
 		openInterest = mapping.getOpenInterest(cursor);
 	}
 

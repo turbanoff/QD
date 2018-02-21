@@ -1,10 +1,13 @@
 /*
+ * !++
  * QDS - Quick Data Signalling Library
- * Copyright (C) 2002-2016 Devexperts LLC
- *
+ * !-
+ * Copyright (C) 2002 - 2018 Devexperts LLC
+ * !-
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
+ * !__
  */
 package com.devexperts.rmi.impl;
 
@@ -17,7 +20,6 @@ import com.devexperts.util.IndexedSet;
 
 @ThreadSafe
 class RunningTask {
-
 	private final IndexedSet<Long, RMITaskImpl<?>> serverChannelTasks = IndexedSet.createLong(RMITaskImpl.TASK_INDEXER_BY_ID);
 	private final EnumMap<RMIChannelType,  Map<Long, IndexedSet<Long, RMITaskImpl<?>>>> mapNestedTask =
 			new EnumMap<>(RMIChannelType.class);
@@ -35,21 +37,28 @@ class RunningTask {
 		set.add(task);
 	}
 
+	// for inner task
 	synchronized void remove(RMITaskImpl<?> task) {
+		assert task.isNestedTask();
 		IndexedSet<Long, RMITaskImpl<?>> set = getMap(task.getChannel().getType()).get(task.getChannelId());
-		if (task.isNestedTask()) {
-			if (set == null)
-				return;
-			set.remove(task);
-			if (set.isEmpty())
-				getMap(task.getChannel().getType()).remove(task.getChannelId());
+		if (set == null)
 			return;
-		}
-		if (set != null) {
+		set.remove(task);
+		if (set.isEmpty())
+			getMap(task.getChannel().getType()).remove(task.getChannelId());
+	}
+
+	// for top-level tasks
+	synchronized void remove(RMIChannelOwner owner, long channelId) {
+		IndexedSet<Long, RMITaskImpl<?>> set = getMap(owner.getChannelType()).get(channelId);
+		if (set != null && !set.isEmpty()) {
 			for (RMITaskImpl<?> runTask : set)
 				runTask.completeExceptionally(RMIExceptionType.CHANNEL_CLOSED, null);
 		}
-		serverChannelTasks.remove(task);
+		if (owner.getChannelType() == RMIChannelType.SERVER_CHANNEL) {
+			//noinspection SuspiciousMethodCalls
+			serverChannelTasks.remove(owner);
+		}
 	}
 
 	synchronized RMITaskImpl<?> removeById(long requestId, long channelId, RMIChannelType type) {
@@ -88,12 +97,11 @@ class RunningTask {
 			task.cancel(RMIExceptionType.DISCONNECTION);
 	}
 
+	boolean hasServerChannelTask() {
+		return !serverChannelTasks.isEmpty(); // volatile read
+	}
+
 	private  Map<Long, IndexedSet<Long, RMITaskImpl<?>>> getMap(RMIChannelType type) {
-		Map<Long, IndexedSet<Long, RMITaskImpl<?>>> result = mapNestedTask.get(type);
-		if (result == null) {
-			result = new HashMap<>();
-			mapNestedTask.put(type, result);
-		}
-		return result;
+		return mapNestedTask.computeIfAbsent(type, k -> new HashMap<>());
 	}
 }
